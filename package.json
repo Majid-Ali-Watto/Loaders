@@ -1,6 +1,6 @@
 {
 	"name": "circle-loader",
-	"version": "1.0.5",
+	"version": "1.0.6",
 	"description": "A simple, lightweight loader component that can be programmatically started and stopped. It dynamically adds a loading spinner to the DOM and removes it when loading is complete.",
 	"main": "dist/bundle.js",
 	"module": "dist/bundle.esm.js",
