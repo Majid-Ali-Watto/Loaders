@@ -1,0 +1,17 @@
+# Keeps the pinned GitHub Actions hashes and the dev dependencies up to date, through pull requests.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      dev-dependencies:
+        dependency-type: development
+    # Wait a week before suggesting a new release, so a hijacked version is usually caught first.
+    cooldown:
+      default-days: 7

@@ -67,7 +67,7 @@ google-chrome --headless=new --disable-gpu --no-sandbox --user-data-dir=<tmp> \
   --window-size=1280,900 --virtual-time-budget=1500 --screenshot=<out.png> "file://$PWD/demo/index.html"
 ```
 
-The demo loads `../dist/circle-loader.min.js` (cache-busted) and falls back to `unpkg.com/circle-loader@^1.1.0`, so build first.
+The demo loads `../dist/circle-loader.min.js` (cache-busted) and falls back to jsDelivr at the exact version in `CDN_VERSION`, so build first.
 
 ## Demo
 
@@ -75,6 +75,18 @@ The demo loads `../dist/circle-loader.min.js` (cache-busted) and falls back to `
 - **The preview stage stays dark** whatever the page theme: it shows the loader's real default `background: "dark"`. Don't tie it to the page theme.
 - **SEO:** the `<head>` has the title, description, canonical URL, Open Graph/Twitter tags and JSON-LD, all pointing at `https://majid-ali-watto.github.io/Loaders/demo/`. `demo/og.png` is the 1200×630 link-preview image, a headless Chrome screenshot of the demo at that window size (`--window-size=1200,630 --hide-scrollbars`): retake it when the page's look changes. The "About" section is the page's crawlable text. The Pages workflow adds `sitemap.xml` (no `robots.txt`: it only works at the domain root).
 - **Variant info:** `INFO` (one-line description) and `USES` (which variants use `secondaryColor`, `thickness`, `trackColor`) drive the tiles and grey out unused controls.
+
+## Releasing
+
+1. Bump `version` in `package.json`, and `CDN_VERSION` in `demo/index.html` plus the pinned CDN URLs in the README to the same version.
+2. Merge to `master`, then publish a GitHub release tagged `v<version>`. `.github/workflows/publish.yml` checks the tag matches, runs the tests and publishes to npm with provenance (npm trusted publishing: no npm token exists anywhere). Never `npm publish` from a laptop.
+
+## Security rules
+
+- **CDN URLs are always pinned to an exact version** (README, demo fallback, demo code snippets). Never a range or no version: that runs any future release on users' pages.
+- **Workflows:** `permissions: {}` at the top, then only what each job needs. A job that runs `npm ci` (third-party code) never gets `pages`, `id-token` or write access, except the publish job, which needs `id-token`. Actions are pinned to full commit hashes with the version in a comment (the repo requires it); Dependabot (`.github/dependabot.yml`) updates them. Install with `npm ci --ignore-scripts`.
+- **CSS:** option values reach the page as CSS variables. Only use them in color properties (`background-color`, `border-color`...), never in `background`, `background-image`, `mask`, `content` or other properties that accept `url()`, or a color option could make the browser fetch a URL.
+- **Text** goes in with `textContent`, never `innerHTML`. The demo's share-link loader accepts only known keys with the expected types.
 
 ## Conventions
 

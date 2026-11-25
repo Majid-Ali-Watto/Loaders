@@ -14,7 +14,13 @@ const types = {
 };
 
 const server = http.createServer((req, res) => {
-	const url = decodeURIComponent(new URL(req.url, "http://localhost").pathname);
+	let url;
+	try {
+		url = decodeURIComponent(new URL(req.url, "http://localhost").pathname);
+	} catch {
+		res.writeHead(400, { "Content-Type": "text/plain" });
+		return res.end("Bad request"); // a malformed %-escape, which would otherwise crash the server
+	}
 	if (url === "/" || url === "/demo") {
 		res.writeHead(302, { Location: "/demo/" });
 		return res.end();

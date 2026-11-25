@@ -74,23 +74,33 @@ Try every option in the [live playground](https://majid-ali-watto.github.io/Load
 npm install circle-loader
 ```
 
-Or without a build step, from a CDN:
+Or without a build step, from a CDN. Always pin the exact version:
 
 ```html
-<script src="https://unpkg.com/circle-loader/dist/circle-loader.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/circle-loader@1.1.0/dist/circle-loader.min.js" crossorigin="anonymous"></script>
 <script>
 	const { Loader } = CircleLoader;
 	Loader.start();
 </script>
 ```
 
-For production, pin a version, e.g. `https://unpkg.com/circle-loader@1.2.0/dist/circle-loader.min.js`.
+**Security:** an unpinned URL (`circle-loader` or `circle-loader@1`) runs whatever version is newest, on your page, without you seeing it. For production, also add [Subresource Integrity](https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity), so the browser refuses a file that was changed. jsDelivr shows the `integrity` value on the file's page, or work it out yourself:
+
+```bash
+curl -s https://cdn.jsdelivr.net/npm/circle-loader@1.1.0/dist/circle-loader.min.js | openssl dgst -sha384 -binary | openssl base64 -A
+```
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/circle-loader@1.1.0/dist/circle-loader.min.js" integrity="sha384-<the value>" crossorigin="anonymous"></script>
+```
+
+Releases are published from GitHub Actions with [npm provenance](https://docs.npmjs.com/generating-provenance-statements), so you can check a version was built from this repository: `npm audit signatures`.
 
 That script has all 50 variants (about 10 KB gzipped). For less, load the core (about 5.5 KB) and only the variants you use (about 0.6 KB each), after it:
 
 ```html
-<script src="https://unpkg.com/circle-loader/dist/circle-loader.core.min.js"></script>
-<script src="https://unpkg.com/circle-loader/dist/variants/dots.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/circle-loader@1.1.0/dist/circle-loader.core.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/circle-loader@1.1.0/dist/variants/dots.min.js" crossorigin="anonymous"></script>
 ```
 
 `circle-loader.element.min.js` is the full script plus the [`<circle-loader>` element](#the-circle-loader-element).
