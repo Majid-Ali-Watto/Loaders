@@ -1,0 +1,39 @@
+# Publishes the package to npm when a GitHub release is published (tag "v1.2.3" = version "1.2.3").
+# Uses npm trusted publishing (OpenID Connect): no npm token is stored anywhere, and npm adds
+# provenance, so anyone can verify the release was built from this repository by this workflow.
+# One-time setup on npmjs.com: package settings -> Trusted publishing -> GitHub Actions,
+# repository Majid-Ali-Watto/Loaders, workflow publish.yml, environment npm.
+name: Publish to npm
+
+on:
+  release:
+    types: [published]
+
+permissions: {}
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write # for trusted publishing and provenance
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24 # npm 11.5.1+ is needed for trusted publishing
+          registry-url: https://registry.npmjs.org
+      - name: Check the tag matches package.json
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          if [ "$TAG" != "v$VERSION" ]; then
+            echo "::error::Release tag $TAG doesn't match package.json version $VERSION (expected v$VERSION)."
+            exit 1
+          fi
+      - run: npm ci --ignore-scripts
+      - run: npm publish --provenance --access public # runs the tests first (prepublishOnly)

@@ -71,14 +71,14 @@
     height: 4px;
     border-radius: 2px;
     overflow: hidden;
-    background: var(--circle-loader-track, rgba(255, 255, 255, 0.15));
+    background-color: var(--circle-loader-track, rgba(255, 255, 255, 0.15));
 }
 
 .loading-progress-bar::before {
     content: "";
     position: absolute;
     inset: 0;
-    background: var(--circle-loader-color, #3b82f6);
+    background-color: var(--circle-loader-color, #3b82f6);
     /* scaleX, not width: no layout on every change */
     transform: scaleX(calc(var(--circle-loader-progress, 0) / 100));
     transform-origin: 0 50%;
