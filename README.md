@@ -2,8 +2,11 @@
 
 [![npm version](https://img.shields.io/npm/v/circle-loader)](https://www.npmjs.com/package/circle-loader)
 [![license](https://img.shields.io/npm/l/circle-loader)](#license)
+[![live demo](https://img.shields.io/badge/demo-live-3b82f6)](https://majid-ali-watto.github.io/Loaders/demo/)
 
 **50 circular loading spinners with one small API.** Show a loader while data loads, over the whole page or inside one element. No dependencies. Works with React, Vue, Angular, Svelte, Next.js, Nuxt and plain JavaScript.
+
+**[Try the live playground →](https://majid-ali-watto.github.io/Loaders/demo/)** Pick a spinner, colors and text, then copy the code.
 
 <p>
 	<img src="docs/variants/circle.svg" width="48" height="48" alt="circle loader">
@@ -40,7 +43,7 @@ await Loader.wrap(fetch("/api/users"), { variant: "arc", color: "#10b981" }, "Lo
 - **A `<circle-loader>` element** for declarative use in any framework or plain HTML.
 - **TypeScript types included.**
 
-Try every option in the playground, in a light or dark theme: run `npm run demo` in this repository.
+Try every option in the [live playground](https://majid-ali-watto.github.io/Loaders/demo/), in a light or dark theme. To run it locally, use `npm run demo` in this repository.
 
 ## Contents
 
