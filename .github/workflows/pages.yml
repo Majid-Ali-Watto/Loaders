@@ -1,5 +1,8 @@
 # Builds the package and publishes the playground (demo/ + dist/) to GitHub Pages.
 # The site root redirects to demo/. The demo loads ../dist/circle-loader.min.js, so dist/ must be built here.
+#
+# Build and deploy are separate jobs, as in GitHub's own Pages workflow. In one job, deploy-pages
+# sometimes looked for the artifact before it was listed ("No artifacts named github-pages were found").
 name: Deploy demo to GitHub Pages
 
 on:
@@ -12,16 +15,14 @@ permissions:
   pages: write
   id-token: write
 
+# One deployment at a time. A newer push waits instead of cancelling a deployment halfway.
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}demo/
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -38,5 +39,13 @@ jobs:
       - uses: actions/upload-pages-artifact@v5
         with:
           path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}demo/
+    steps:
       - id: deployment
         uses: actions/deploy-pages@v5
