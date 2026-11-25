@@ -1,0 +1,42 @@
+# Builds the package and publishes the playground (demo/ + dist/) to GitHub Pages.
+# The site root redirects to demo/. The demo loads ../dist/circle-loader.min.js, so dist/ must be built here.
+name: Deploy demo to GitHub Pages
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}demo/
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Assemble site
+        run: |
+          mkdir -p site
+          cp -r demo dist site/
+          echo '<!doctype html><meta charset="utf-8"><title>circle-loader</title><meta http-equiv="refresh" content="0; url=demo/"><a href="demo/">circle-loader playground</a>' > site/index.html
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: site
+      - id: deployment
+        uses: actions/deploy-pages@v5
