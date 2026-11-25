@@ -32,9 +32,12 @@ await Loader.wrap(fetch("/api/users"), { variant: "arc", color: "#10b981" }, "Lo
 - **Style options for everything:** colors, size, thickness, speed, background (dark, light, dim, blur, transparent or any color) and text.
 - **No flicker:** `delay` skips the loader for fast requests, `minDuration` stops it blinking.
 - **Overlapping requests just work:** calls are counted, so one request finishing doesn't hide another's loader.
-- **Small and tree-shakable:** under 5 KB gzipped for the core plus one variant. Unused variants are left out of your bundle.
+- **Small and tree-shakable:** about 6 KB gzipped for the core plus one variant. Unused variants are left out of your bundle.
 - **Safe for server rendering:** importing it never touches the page.
-- **Accessible:** announced to screen readers, and slower for users who prefer reduced motion.
+- **Progress:** show a bar and a percentage with `Loader.progress(42)`.
+- **Accessible:** announced to screen readers, keyboard focus can't reach the page behind it, and slower for users who prefer reduced motion.
+- **Works with a strict Content-Security-Policy:** pass a `nonce`, or it uses your page's.
+- **A `<circle-loader>` element** for declarative use in any framework or plain HTML.
 - **TypeScript types included.**
 
 Try every option in the playground, in a light or dark theme: run `npm run demo` in this repository.
@@ -52,10 +55,13 @@ Try every option in the playground, in a light or dark theme: run `npm run demo`
 - [Background](#background)
 - [Speed](#speed)
 - [Changing the look while it's showing](#changing-the-look-while-its-showing)
+- [Progress](#progress)
 - [Smaller bundles](#smaller-bundles-import-only-what-you-need)
 - [Customizing with CSS](#customizing-with-css)
 - [Frameworks: React, Next.js, Vue, Nuxt](#frameworks)
+- [The `<circle-loader>` element](#the-circle-loader-element)
 - [Accessibility](#accessibility)
+- [Content-Security-Policy](#content-security-policy)
 - [Development](#development)
 - [Author](#author) · [License](#license)
 
@@ -75,7 +81,18 @@ Or without a build step, from a CDN:
 </script>
 ```
 
-For production, pin a version, e.g. `https://unpkg.com/circle-loader@1.1.0/dist/circle-loader.min.js`.
+For production, pin a version, e.g. `https://unpkg.com/circle-loader@1.2.0/dist/circle-loader.min.js`.
+
+That script has all 50 variants (about 10 KB gzipped). For less, load the core (about 5.5 KB) and only the variants you use (about 0.6 KB each), after it:
+
+```html
+<script src="https://unpkg.com/circle-loader/dist/circle-loader.core.min.js"></script>
+<script src="https://unpkg.com/circle-loader/dist/variants/dots.min.js"></script>
+```
+
+`circle-loader.element.min.js` is the full script plus the [`<circle-loader>` element](#the-circle-loader-element).
+
+Two copies of the package on one page (two bundles, or a bundle and a CDN script) share their loaders, defaults, presets and variants, so one copy can close a loader the other opened.
 
 ## Quick start
 
@@ -206,7 +223,7 @@ Pass these to `start()`, `wrap()` or `configure()`:
 
 | Option | Type | Description |
 |---|---|---|
-| `variant` | `string` or variant object | Spinner style: `circle` (default) or one of the other 29. See [Variants](#variants). |
+| `variant` | `string` or variant object | Spinner style: `circle` (default) or one of the other 49. See [Variants](#variants). |
 | `text` | `string \| string[] \| false \| null` | Text under the spinner. A list of messages takes turns. `""`, `false` or `null` shows no text. Default `"Loading..."`. See [Text](#text). |
 | `textInterval` | `number` (ms) | Time between messages when `text` is a list. Default `2000`. |
 | `color` | `string` | Main spinner color, any CSS color. See [Colors and sizes](#colors-and-sizes). |
@@ -216,12 +233,16 @@ Pass these to `start()`, `wrap()` or `configure()`:
 | `size` | `number \| string` | Spinner width and height. A number means pixels. Default `50`. |
 | `thickness` | `number \| string` | Line width of ring-style variants. A number means pixels. |
 | `textSize` | `number \| string` | Text font size. A number means pixels. Default `18`. |
+| `zIndex` | `number \| string` | Stacking order of the overlay. Default `1000`, or `10` inside a `target`. |
+| `progress` | `number \| null` | 0 to 100: shows a bar and a percentage under the text. See [Progress](#progress). |
 | `background` | `string` | `dark` (default), `light`, `dim`, `blur`, `transparent`, or any CSS color. See [Background](#background). |
 | `speed` | `string \| number` | `slow`, `normal` (default), `fast`, or a multiplier such as `1.5`. See [Speed](#speed). |
 | `target` | `Element \| string` | Show the loader inside this element (or CSS selector) instead of over the whole page. |
 | `preset` | `string` | Use a named preset from [`configure()`](#presets-a-few-named-looks). Options passed next to it win. |
 | `delay` | `number` (ms) | Wait before showing. If closed sooner, the loader never appears. |
 | `minDuration` | `number` (ms) | Once shown, keep it visible at least this long. |
+| `blockInput` | `boolean` | Make the content behind the overlay `inert`, so keyboard focus and screen readers can't reach it. Default `true`. See [Accessibility](#accessibility). |
+| `nonce` | `string` | Nonce for the `<style>` tags the package adds. See [Content-Security-Policy](#content-security-policy). |
 | `loadingOverlayStyles` | object | Inline styles for the overlay. See [Style objects](#style-objects). |
 | `loadingSpinnerStyles` | object | Inline styles for the spinner. |
 | `loadingTextStyles` | object | Inline styles for the text. |
@@ -234,6 +255,7 @@ Pass these to `start()`, `wrap()` or `configure()`:
 | `Loader.close(target?)` | Close one `start()`. Hides once every `start()` is closed. Pass the same target (or options) as `start()`. |
 | `Loader.wrap(promiseOrFn, text?, options?)` | Show the loader while it runs, then close it, even if it throws. Returns the result. |
 | `Loader.update(text, target?)` | Change the text of an open loader. Takes the same values as `text`. `update()` brings back the default text. |
+| `Loader.progress(value, target?)` | Show progress (0 to 100) on an open loader. `null` hides it. |
 | `Loader.setStyle(style, target?)` | Change the look of an open loader. See [Changing the look](#changing-the-look-while-its-showing). |
 | `Loader.configure(config)` | Set defaults and presets for every later call. See [Set your defaults once](#set-your-defaults-once). |
 | `Loader.getConfig()` | The current defaults and presets. |
@@ -437,7 +459,7 @@ It works for every variant. An invalid speed (0, negative, an unknown name) logs
 |---|---|
 | Colors | `color`, `secondaryColor`, `trackColor`, `textColor` |
 | Sizes | `size`, `thickness`, `textSize` |
-| Look | `variant`, `speed`, `background`, `preset` |
+| Look | `variant`, `speed`, `background`, `zIndex`, `progress`, `preset` |
 
 ```javascript
 Loader.start({ variant: "ring", color: "#3b82f6" }, "Uploading");
@@ -454,9 +476,21 @@ Loader.setStyle({ color: "orange" }, "#chart");       // a loader inside an elem
 - If the loader is still waiting out its `delay`, the new look is used when it appears.
 - Options it can't change (such as `target` or `delay`) log a warning and are ignored.
 
+## Progress
+
+For uploads and other work with a known size, show a bar and a percentage under the text:
+
+```javascript
+Loader.start("Uploading", { progress: 0 });
+upload.onprogress = (e) => Loader.progress((e.loaded / e.total) * 100);
+upload.onload = () => Loader.close();
+```
+
+Values are clamped to 0 to 100. `Loader.progress(null)` hides the bar. Screen readers get it as a `progressbar`. The bar uses `color` and `trackColor`, and `--circle-loader-progress` holds the value for your own CSS.
+
 ## Smaller bundles: import only what you need
 
-`import { Loader } from "circle-loader"` includes all 50 variants (about 9.3 KB gzipped). Most apps use one or two. Import the core and only the variants you use, and your bundler (Vite, webpack, Rollup, esbuild, Next.js, Nuxt...) leaves the rest out:
+`import { Loader } from "circle-loader"` includes all 50 variants (about 10 KB gzipped). Most apps use one or two. Import the core and only the variants you use, and your bundler (Vite, webpack, Rollup, esbuild, Next.js, Nuxt...) leaves the rest out:
 
 ```javascript
 import { Loader } from "circle-loader/core";       // the Loader and the default circle variant
@@ -522,6 +556,7 @@ Set these in your own CSS to style every loader in your app. The matching option
 | `--circle-loader-speed` | `1` | `speed` |
 | `--circle-loader-text-color` | `#f9f9f9` | `textColor` |
 | `--circle-loader-text-size` | `18px` | `textSize` |
+| `--circle-loader-z-index` | `1000` (`10` in a target) | `zIndex` |
 
 ```css
 .loading-overlay {
@@ -645,9 +680,50 @@ export default defineNuxtPlugin((nuxtApp) => {
 
 `delay: 150` skips the loader on fast page changes. The `pageLoading` flag makes the plugin close only the loader it opened: Nuxt fires `page:finish` on the first page load without a `page:start`.
 
+## The `<circle-loader>` element
+
+For declarative use, import `circle-loader/element` (or load `circle-loader.element.min.js`). It defines a `<circle-loader>` element with every variant. While it has `active`, it covers its parent element; with `fullscreen`, the whole page. Removing `active` or removing the element closes it.
+
+```html
+<div class="card">
+	<circle-loader active variant="dots" text="Saving..." progress="40"></circle-loader>
+	...
+</div>
+```
+
+Attributes: `active`, `fullscreen`, `text`, `variant`, `background`, `speed`, `color`, `secondary-color`, `track-color`, `text-color`, `size`, `thickness`, `text-size`, `z-index`, `progress`, `block-input`, `preset`, `text-interval`, `delay`, `min-duration`, `nonce`. Changing one on an open loader updates it. `active="false"` counts as off, so frameworks can bind booleans directly:
+
+```jsx
+// React (import "circle-loader/element" once, in the browser)
+<div className="card">
+	<circle-loader active={saving ? "true" : "false"} text="Saving" />
+</div>
+```
+
+```vue
+<!-- Vue: tell the compiler it's a custom element (compilerOptions.isCustomElement) -->
+<div class="card">
+	<circle-loader :active="saving" text="Saving" />
+</div>
+```
+
+Importing it on the server defines nothing, so it's safe with SSR. `defineElement("my-loader")` defines it under another name.
+
 ## Accessibility
 
 The loader has `role="status"` and `aria-live="polite"`, so screen readers announce the text. With no text, they hear "Loading". A `target` element gets `aria-busy="true"` while loading. Animations slow down for users who prefer reduced motion.
+
+While a loader is shown, the content it covers is made `inert` (the rest of the page for a fullscreen loader, the target's content for a scoped one), so Tab and screen readers can't reach what's behind it. Focus goes back to where it was when it closes. Elements your page already made `inert` are left alone. Turn it off with `blockInput: false`.
+
+## Content-Security-Policy
+
+The package adds its CSS in `<style>` tags. With a `style-src` policy that has no `'unsafe-inline'`, pass your nonce:
+
+```javascript
+Loader.configure({ nonce: "your-page-nonce" });
+```
+
+Without the option, it uses the nonce of a `<script nonce>` (or `<style nonce>`) already on the page. The options it sets on elements use the CSSOM (`style.setProperty`), which a CSP doesn't block.
 
 ## Development
 
@@ -659,7 +735,7 @@ npm run demo        # builds and serves the playground at http://localhost:5173/
 npm run docs:svgs   # regenerates the variant previews in docs/variants/
 ```
 
-The source is in `src/`: `core.js` (the Loader), `variants.js` (one export per variant) and `styles/` (core CSS plus one file per variant). Types are in `types/`. The playground is `demo/index.html`, a single file with no build step.
+The source is in `src/`: `core.js` (the Loader), `variants.js` (one export per variant), `element.js` (the `<circle-loader>` element) and `styles/` (core CSS plus one file per variant). Types are in `types/`. The playground is `demo/index.html`, a single file with no build step.
 
 ## Author
 

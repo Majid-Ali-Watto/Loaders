@@ -20,7 +20,31 @@ const SPEEDS = { slow: 0.5, normal: 1, fast: 2 };
 /** The default variant. Its styles are part of the core CSS. */
 export const circle = { name: "circle", css: "" };
 
-const registry = new Map([["circle", circle]]);
+// ---- Shared state ----
+// Kept on globalThis, so two copies of the package on one page (two bundles, or a bundle and the CDN script)
+// share their loaders, defaults, presets and variants. Created on first use, so importing has no side effects.
+// The shape is versioned: change STATE_VERSION whenever it changes, so an older copy never reads a newer shape.
+const STATE_KEY = Symbol.for("circle-loader.state");
+const STATE_VERSION = 1;
+let state = null;
+
+function getState() {
+	if (state) return state;
+	const root = typeof globalThis !== "undefined" ? globalThis : {};
+	const shared = root[STATE_KEY];
+	if (shared && shared.version === STATE_VERSION) return (state = shared);
+	state = {
+		version: STATE_VERSION,
+		registry: new Map([["circle", circle]]), // variants usable by name
+		instances: new Map(), // one loader per target; the fullscreen loader uses the key `null`
+		defaults: {}, // Loader.configure() defaults
+		presets: new Map(), // Loader.configure({ presets })
+		inert: new Map(), // element -> how many open loaders made it inert (blockInput)
+		lastStyle: null // the last <style> added, so the next one goes after it
+	};
+	if (!shared) root[STATE_KEY] = state; // a different version keeps its own state
+	return state;
+}
 
 const isVariant = (value) => !!value && typeof value === "object" && typeof value.name === "string" && value.name !== "";
 
@@ -29,7 +53,7 @@ function register(variant) {
 		console.warn('[circle-loader] Loader.register() needs variant objects, e.g. import { dots } from "circle-loader/variants".');
 		return;
 	}
-	registry.set(variant.name, variant);
+	getState().registry.set(variant.name, variant);
 }
 
 // Style options and the CSS variable each one sets on the overlay.
@@ -41,12 +65,13 @@ const STYLE_OPTIONS = {
 	textColor: "--circle-loader-text-color",
 	size: "--circle-loader-size",
 	thickness: "--circle-loader-thickness",
-	textSize: "--circle-loader-text-size"
+	textSize: "--circle-loader-text-size",
+	zIndex: "--circle-loader-z-index"
 };
 const PIXEL_OPTIONS = ["size", "thickness", "textSize"];
 
 // Options setStyle() can change on an open loader.
-const SETTABLE = Object.keys(STYLE_OPTIONS).concat(["variant", "speed", "background"]);
+const SETTABLE = Object.keys(STYLE_OPTIONS).concat(["variant", "speed", "background", "progress"]);
 
 const isEmpty = (value) => value === undefined || value === null || value === "";
 
@@ -65,6 +90,7 @@ function applyStyleOptions(overlay, options) {
 // Accepts a variant object (registered on first use) or the name of a registered variant.
 function resolveVariant(variant) {
 	if (variant === undefined || variant === null || variant === "") return circle;
+	const registry = getState().registry;
 	if (isVariant(variant)) {
 		if (registry.get(variant.name) !== variant) register(variant);
 		return variant;
@@ -82,9 +108,16 @@ function resolveVariant(variant) {
 // ---- CSS ----
 // Styles are added on first use, never at import, so importing the package has no side effects.
 // They go at the top of <head> (in the order used), so the page's own CSS wins on equal specificity.
-let lastStyle = null;
 
-function injectCss(id, css) {
+// With a Content-Security-Policy, <style> tags need the page's nonce: the `nonce` option,
+// or else the nonce of a <script> or <style> already on the page.
+function findNonce(nonce) {
+	if (!isEmpty(nonce)) return String(nonce);
+	const el = document.querySelector("script[nonce]") || document.querySelector("style[nonce]");
+	return (el && (el.nonce || el.getAttribute("nonce"))) || "";
+}
+
+function injectCss(id, css, nonce) {
 	if (!css) return;
 	const existing = document.getElementById(id);
 	if (existing) {
@@ -94,10 +127,13 @@ function injectCss(id, css) {
 	const head = document.head || document.documentElement;
 	const style = document.createElement("style");
 	style.id = id;
+	nonce = findNonce(nonce);
+	if (nonce) style.setAttribute("nonce", nonce);
 	style.textContent = css;
-	if (lastStyle && lastStyle.parentNode === head) head.insertBefore(style, lastStyle.nextSibling);
+	const s = getState();
+	if (s.lastStyle && s.lastStyle.parentNode === head) head.insertBefore(style, s.lastStyle.nextSibling);
 	else head.insertBefore(style, head.firstChild);
-	lastStyle = style;
+	s.lastStyle = style;
 }
 
 function resolveSpeed(speed) {
@@ -212,11 +248,95 @@ function renderText(inst) {
 	}
 }
 
+// ---- Progress ----
+// A number from 0 to 100 shows a bar and a percentage under the text. null/undefined hides it.
+function progressValue(value) {
+	if (value === undefined || value === null || value === "" || value === false) return null;
+	const n = Number(value);
+	if (typeof value === "boolean" || !Number.isFinite(n)) {
+		console.warn(`[circle-loader] Invalid progress "${value}". Use a number from 0 to 100, or null to hide it.`);
+		return null;
+	}
+	return Math.round(Math.min(100, Math.max(0, n)) * 10) / 10; // 0.1 steps: finer changes aren't visible
+}
+
+function renderProgress(inst) {
+	const value = progressValue(inst.options.progress);
+	let el = inst.progressEl;
+	if (value === null) {
+		if (el) el.remove();
+		inst.progressEl = null;
+		inst.progressValue = null;
+		inst.el.style.removeProperty("--circle-loader-progress");
+		return;
+	}
+	if (!el) {
+		el = document.createElement("div");
+		el.className = "loading-progress";
+		el.setAttribute("role", "progressbar");
+		el.setAttribute("aria-valuemin", "0");
+		el.setAttribute("aria-valuemax", "100");
+		const bar = document.createElement("div");
+		bar.className = "loading-progress-bar";
+		const label = document.createElement("span");
+		label.className = "loading-progress-label";
+		el.append(bar, label);
+		inst.el.appendChild(el);
+		inst.progressEl = el;
+	}
+	// Write only what changed: progress events can fire hundreds of times a second.
+	if (value === inst.progressValue) return;
+	inst.progressValue = value;
+	inst.el.style.setProperty("--circle-loader-progress", String(value));
+	const label = Math.round(value) + "%";
+	if (el.lastChild.textContent !== label) {
+		el.setAttribute("aria-valuenow", String(Math.round(value)));
+		el.lastChild.textContent = label;
+	}
+}
+
+// ---- Blocking input (blockInput option) ----
+// The overlay already stops clicks. To also stop keyboard focus and screen readers from reaching
+// what is behind it, the overlay's siblings are made `inert` while it is shown.
+// Counted per element, so two loaders can share one; elements the page made inert itself are left alone.
+function blockInput(inst) {
+	const s = getState();
+	const container = inst.target || document.body;
+	inst.inertEls = [];
+	for (const child of Array.from(container.children)) {
+		if (child === inst.el || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/.test(child.tagName)) continue;
+		const count = s.inert.get(child) || 0;
+		if (count === 0 && child.hasAttribute("inert")) continue;
+		s.inert.set(child, count + 1);
+		child.setAttribute("inert", "");
+		inst.inertEls.push(child);
+	}
+	const active = document.activeElement;
+	if (active && active !== document.body && inst.inertEls.some((el) => el.contains(active))) {
+		inst.restoreFocus = active;
+		if (typeof active.blur === "function") active.blur();
+	}
+}
+
+function unblockInput(inst) {
+	const s = getState();
+	(inst.inertEls || []).forEach((el) => {
+		const count = (s.inert.get(el) || 1) - 1;
+		if (count > 0) return s.inert.set(el, count);
+		s.inert.delete(el);
+		el.removeAttribute("inert");
+	});
+	inst.inertEls = [];
+	const el = inst.restoreFocus;
+	inst.restoreFocus = null;
+	const active = document.activeElement;
+	if (el && el.isConnected && (!active || active === document.body) && typeof el.focus === "function") el.focus({ preventScroll: true });
+}
+
 // ---- Defaults and presets (Loader.configure) ----
 // Every start() merges, lowest to highest priority:
 //   built-in defaults < configure() defaults < the named preset < the options passed to the call.
-let defaults = {};
-const presets = new Map();
+// The defaults and presets live in the shared state (getState().defaults / .presets).
 
 // The style objects merge key by key, so a call can add one style without dropping the defaults.
 const MERGED_STYLES = ["loadingOverlayStyles", "loadingSpinnerStyles", "loadingTextStyles"];
@@ -238,6 +358,7 @@ function mergeOptions(layers) {
 
 function findPreset(name, quiet) {
 	if (name === undefined || name === null || name === "") return null;
+	const presets = getState().presets;
 	if (presets.has(name)) return presets.get(name);
 	if (!quiet) {
 		const known = Array.from(presets.keys());
@@ -248,12 +369,13 @@ function findPreset(name, quiet) {
 
 // The options a call actually uses: defaults, then its preset, then the call's own options.
 function resolveOptions(options, quiet) {
-	const merged = mergeOptions([defaults, findPreset(options.preset, quiet), options]);
+	const merged = mergeOptions([getState().defaults, findPreset(options.preset, quiet), options]);
 	delete merged.preset;
 	return merged;
 }
 
 function configurePresets(value) {
+	const presets = getState().presets;
 	if (value === null) return presets.clear();
 	if (!isPlainObject(value)) {
 		console.warn("[circle-loader] presets must be an object of named options, e.g. { save: { variant: \"dots\" } }.");
@@ -269,9 +391,6 @@ function configurePresets(value) {
 		} else console.warn(`[circle-loader] Preset "${name}" must be an options object, or null to remove it.`);
 	}
 }
-
-// One loader instance per target. The fullscreen loader uses the key `null`.
-const instances = new Map();
 
 const hasDOM = () => typeof document !== "undefined";
 
@@ -316,7 +435,7 @@ function applyStyles(el, styles) {
 function createSpinner(options) {
 	const spinner = document.createElement("div");
 	const variant = resolveVariant(options.variant);
-	injectCss(`circle-loader-variant-${variant.name}`, variant.css);
+	injectCss(`circle-loader-variant-${variant.name}`, variant.css, options.nonce);
 	spinner.className = `loading-spinner loading-spinner--${variant.name}`;
 	spinner.setAttribute("aria-hidden", "true");
 	for (let i = 0; i < (variant.spans || 0); i++) spinner.appendChild(document.createElement("span"));
@@ -334,6 +453,7 @@ function restyle(inst, changes) {
 		inst.spinnerEl = spinner;
 	}
 	if ("speed" in changes) applySpeed(el, options.speed);
+	if ("progress" in changes) renderProgress(inst);
 	if ("background" in changes) {
 		clearBackground(el);
 		applyBackground(el, options.background);
@@ -348,8 +468,8 @@ function restyle(inst, changes) {
 
 function show(inst) {
 	inst.showTimer = null;
-	injectCss("circle-loader-core", coreCss);
 	const { options, target } = inst;
+	injectCss("circle-loader-core", coreCss, options.nonce);
 
 	const overlay = document.createElement("div");
 	overlay.className = target ? "loading-overlay loading-overlay--scoped" : "loading-overlay";
@@ -386,6 +506,8 @@ function show(inst) {
 	inst.shownAt = Date.now();
 	autoTextColor(inst);
 	renderText(inst);
+	renderProgress(inst);
+	if (options.blockInput !== false) blockInput(inst);
 }
 
 function destroy(inst) {
@@ -393,10 +515,12 @@ function destroy(inst) {
 	clearTimeout(inst.hideTimer);
 	clearInterval(inst.textTimer);
 	if (inst.el) inst.el.remove();
+	unblockInput(inst);
 	if (inst.target) {
 		if (inst.restorePosition !== undefined) inst.target.style.position = inst.restorePosition;
 		inst.target.removeAttribute("aria-busy");
 	}
+	const instances = getState().instances;
 	if (instances.get(inst.key) === inst) instances.delete(inst.key);
 }
 
@@ -420,6 +544,7 @@ class Loader {
 		const target = resolveTarget(options.target);
 		if (target === undefined) return;
 
+		const instances = getState().instances;
 		const existing = instances.get(target);
 		if (existing) {
 			existing.count++;
@@ -438,6 +563,10 @@ class Loader {
 			el: null,
 			spinnerEl: null,
 			textEl: null,
+			progressEl: null,
+			progressValue: null,
+			inertEls: [],
+			restoreFocus: null,
 			autoText: false,
 			autoTrack: false,
 			textTimer: null,
@@ -456,7 +585,7 @@ class Loader {
 	/** Close one start() call. The loader hides once every start() has been closed. */
 	static close(target) {
 		if (!hasDOM()) return;
-		const inst = instances.get(resolveTarget(target));
+		const inst = getState().instances.get(resolveTarget(target));
 		if (!inst || inst.count === 0) return;
 		inst.count--;
 		if (inst.count === 0) hide(inst);
@@ -466,17 +595,27 @@ class Loader {
 	static forceClose(target) {
 		if (!hasDOM()) return;
 		if (target === undefined) {
-			Array.from(instances.values()).forEach(destroy);
+			Array.from(getState().instances.values()).forEach(destroy);
 			return;
 		}
-		const inst = instances.get(resolveTarget(target));
+		const inst = getState().instances.get(resolveTarget(target));
 		if (inst) destroy(inst);
+	}
+
+	/** Show progress (0 to 100) as a bar and a percentage on a loader that is already started. null hides it. */
+	static progress(value, target) {
+		// A short path, not setStyle(): it's called on every progress event.
+		if (!hasDOM()) return;
+		const inst = getState().instances.get(resolveTarget(target));
+		if (!inst) return;
+		inst.options = Object.assign({}, inst.options, { progress: value === undefined ? null : value });
+		if (inst.el) renderProgress(inst);
 	}
 
 	/** Change the text of a loader that is already started: a string, a list to rotate, or ""/false/null for none. */
 	static update(text, target) {
 		if (!hasDOM()) return;
-		const inst = instances.get(resolveTarget(target));
+		const inst = getState().instances.get(resolveTarget(target));
 		if (!inst) return;
 		inst.text = text; // undefined brings back the default text
 		renderText(inst);
@@ -488,7 +627,7 @@ class Loader {
 	 */
 	static setStyle(style, target) {
 		if (!hasDOM() || !style || typeof style !== "object") return;
-		const inst = instances.get(resolveTarget(target));
+		const inst = getState().instances.get(resolveTarget(target));
 		if (!inst) return;
 		// A preset brings its style options; options passed next to it win.
 		if (style.preset !== undefined) {
@@ -515,16 +654,17 @@ class Loader {
 	 * Calls merge into what is there. null removes one default (or one preset); configure(null) removes all.
 	 */
 	static configure(config) {
+		const s = getState();
 		if (config === null) {
-			defaults = {};
-			presets.clear();
+			s.defaults = {};
+			s.presets.clear();
 			return;
 		}
 		if (!isPlainObject(config)) {
 			console.warn("[circle-loader] Loader.configure() needs an options object, or null to clear everything.");
 			return;
 		}
-		const next = Object.assign({}, defaults);
+		const next = Object.assign({}, s.defaults);
 		for (const key in config) {
 			const value = config[key];
 			if (key === "presets") configurePresets(value);
@@ -533,12 +673,13 @@ class Loader {
 			} else if (value === null) delete next[key];
 			else if (value !== undefined) next[key] = value;
 		}
-		defaults = next;
+		s.defaults = next;
 	}
 
 	/** The current defaults and presets (copies, so changing them has no effect). */
 	static getConfig() {
 		const copy = (o) => Object.assign({}, o);
+		const { defaults, presets } = getState();
 		const presetCopies = {};
 		presets.forEach((value, name) => (presetCopies[name] = copy(value)));
 		return Object.assign(copy(defaults), { presets: presetCopies });
@@ -554,13 +695,13 @@ class Loader {
 
 	/** Names of the variants that can be used by name. */
 	static get variants() {
-		return Object.freeze(Array.from(registry.keys()));
+		return Object.freeze(Array.from(getState().registry.keys()));
 	}
 
 	/** True from start() until the loader is closed (including while waiting out `delay`). */
 	static isActive(target) {
 		if (!hasDOM()) return false;
-		const inst = instances.get(resolveTarget(target));
+		const inst = getState().instances.get(resolveTarget(target));
 		return !!inst && inst.count > 0;
 	}
 

@@ -5,9 +5,13 @@
     animation: none;
 }
 
+/* The bounce uses `translate` (off the main thread, unlike `top`), separate from `transform`
+   so it eases over the whole bounce while the squash only runs at the bottom.
+   200% of the ball's height (28%) is 56% of the ring: from 8% to 64%. */
 .loading-spinner--ball::before {
     content: "";
     position: absolute;
+    top: 8%;
     left: 50%;
     width: 28%;
     height: 28%;
@@ -19,7 +23,7 @@
 }
 
 @keyframes circle-loader-ball {
-    0% { top: 8%; transform: scale(1, 1); }
+    0% { translate: 0 0; transform: scale(1, 1); }
     85% { transform: scale(1, 1); }
-    100% { top: 64%; transform: scale(1.25, 0.8); }
+    100% { translate: 0 200%; transform: scale(1.25, 0.8); }
 }

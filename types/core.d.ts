@@ -110,6 +110,17 @@ export interface LoaderOptions {
 	thickness?: number | string;
 	/** Font size of the text. A number means pixels. Defaults to 18. */
 	textSize?: number | string;
+	/** Stacking order of the overlay. Defaults to 1000 (fullscreen) or 10 (inside a target). */
+	zIndex?: number | string;
+	/** Progress from 0 to 100, shown as a bar and a percentage under the text. null hides it. */
+	progress?: number | null;
+	/**
+	 * Make the content behind the overlay `inert` while it is shown, so keyboard focus and screen readers
+	 * can't reach it. Focus goes back where it was afterwards. Defaults to true.
+	 */
+	blockInput?: boolean;
+	/** Nonce for the <style> tags the package adds, for a Content-Security-Policy. Defaults to the nonce of a <script> or <style> on the page. */
+	nonce?: string;
 	/** Show the loader inside this element instead of covering the whole screen. */
 	target?: LoaderTarget;
 	/** Use a preset added with Loader.configure({ presets }). Options passed next to it win. */
@@ -128,7 +139,7 @@ export interface LoaderOptions {
 
 /** Options setStyle() can change. null or "" resets an option to its default. A preset applies its style options. */
 export type LoaderStyleOptions = {
-	[K in "variant" | "color" | "secondaryColor" | "trackColor" | "textColor" | "size" | "thickness" | "textSize" | "speed" | "background"]?:
+	[K in "variant" | "color" | "secondaryColor" | "trackColor" | "textColor" | "size" | "thickness" | "textSize" | "zIndex" | "progress" | "speed" | "background"]?:
 		| LoaderOptions[K]
 		| null;
 } & { preset?: string };
@@ -165,6 +176,9 @@ export declare class Loader {
 
 	/** Remove the loader immediately, ignoring the call count and minDuration. No target removes every loader. */
 	static forceClose(target?: LoaderTarget | LoaderOptions): void;
+
+	/** Show progress (0 to 100) as a bar and a percentage on a loader that is already started. null hides it. */
+	static progress(value: number | null, target?: LoaderTarget | LoaderOptions): void;
 
 	/** Change the text of a loader that is already started. No text brings back the default. */
 	static update(text?: LoaderText, target?: LoaderTarget | LoaderOptions): void;

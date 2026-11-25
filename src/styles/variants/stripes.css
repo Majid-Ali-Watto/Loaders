@@ -1,14 +1,28 @@
 /* stripes: diagonal stripes sliding across a disc */
 .loading-spinner.loading-spinner--stripes {
     --circle-loader-stripe: calc(var(--circle-loader-size, 50px) * 0.4);
+    position: relative;
+    overflow: hidden;
     border: var(--circle-loader-thickness, 2px) solid var(--circle-loader-color, #3b82f6);
     background-color: var(--circle-loader-track, rgba(255, 255, 255, 0.15));
+    animation: none;
+}
+
+/* The stripes sit on a layer one stripe wider that slides with transform (off the main thread,
+   unlike background-position). Moving one stripe looks the same as the pattern looping. */
+.loading-spinner--stripes::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: calc(var(--circle-loader-stripe) * -1);
+    width: calc(100% + var(--circle-loader-stripe));
     background-image: linear-gradient(45deg, var(--circle-loader-color, #3b82f6) 25%, transparent 25% 50%, var(--circle-loader-color, #3b82f6) 50% 75%, transparent 75%);
     background-size: var(--circle-loader-stripe) var(--circle-loader-stripe);
     animation: circle-loader-stripes calc(0.8s / var(--circle-loader-speed, 1)) linear infinite;
 }
 
 @keyframes circle-loader-stripes {
-    0% { background-position: 0 0; }
-    100% { background-position: var(--circle-loader-stripe) 0; }
+    0% { transform: translateX(0); }
+    100% { transform: translateX(var(--circle-loader-stripe)); }
 }

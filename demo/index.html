@@ -385,6 +385,11 @@
 						<div><button class="btn primary" id="run-request">Run pretend request</button></div>
 						<div class="status" id="status" aria-live="polite">Runs <code>Loader.wrap()</code> around a fake request, fullscreen, with your settings.</div>
 					</div>
+					<div class="try-box">
+						<p class="section-title">Progress</p>
+						<div><button class="btn" id="run-upload">Run pretend upload</button></div>
+						<p class="help">Shows a bar and a percentage under the text for work with a known size, for as long as the pretend request above. <code>Loader.progress(42)</code></p>
+					</div>
 				</div>
 			</div>
 		</main>
@@ -978,6 +983,23 @@
 					$("status").innerHTML = firstSeen === null
 						? `Request took <b>${state.requestTime} ms</b>. It finished before the wait, so <b>no loader was shown</b>.`
 						: `Request took <b>${state.requestTime} ms</b>. The loader appeared after <b>${firstSeen} ms</b> and was gone after <b>${total} ms</b>.`;
+					btn.disabled = false;
+				}, 50);
+			};
+
+			// ---------- Pretend upload (progress) ----------
+			if (typeof Loader.progress !== "function") $("run-upload").disabled = true; // an older CDN fallback
+			$("run-upload").onclick = () => {
+				const btn = $("run-upload");
+				btn.disabled = true;
+				const started = performance.now();
+				Loader.start({ ...styleOptions(), text: "Uploading", progress: 0 });
+				const tick = setInterval(() => {
+					const done = Math.min(1, (performance.now() - started) / state.requestTime);
+					Loader.progress(done * 100);
+					if (done < 1) return;
+					clearInterval(tick);
+					Loader.close();
 					btn.disabled = false;
 				}, 50);
 			};

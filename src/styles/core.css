@@ -12,7 +12,7 @@
     justify-content: center;
     /* background-color: var(--overlay-bg-color); */
     background-color: #1a1a1a;
-    z-index: 1000;
+    z-index: var(--circle-loader-z-index, 1000);
     /* Variables you can set (defaults are in the var() fallbacks, so your CSS always wins).
        The color, size, thickness, textColor... options set these for you.
        --circle-loader-color: main color of every variant (default #3b82f6; "circle" keeps red/blue unless set)
@@ -22,7 +22,9 @@
        --circle-loader-thickness: line width of ring-style variants (default depends on the variant)
        --circle-loader-speed: speed multiplier, 2 = twice as fast (default 1)
        --circle-loader-text-color: color of the loading text (default #f9f9f9)
-       --circle-loader-text-size: font size of the loading text (default 18px) */
+       --circle-loader-text-size: font size of the loading text (default 18px)
+       --circle-loader-z-index: stacking order of the overlay (default 1000, or 10 inside a target)
+       --circle-loader-progress: set by the progress option, 0 to 100 */
 }
 
 .loading-spinner {
@@ -52,10 +54,50 @@
     color: var(--circle-loader-text-color, #f9f9f9);
 }
 
+/* ---- Progress (progress option) ---- */
+.loading-progress {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+    color: var(--circle-loader-text-color, #f9f9f9);
+    font-size: calc(var(--circle-loader-text-size, 18px) * 0.75);
+    font-variant-numeric: tabular-nums;
+}
+
+.loading-progress-bar {
+    position: relative;
+    width: calc(var(--circle-loader-size, 50px) * 2.4);
+    height: 4px;
+    border-radius: 2px;
+    overflow: hidden;
+    background: var(--circle-loader-track, rgba(255, 255, 255, 0.15));
+}
+
+.loading-progress-bar::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--circle-loader-color, #3b82f6);
+    /* scaleX, not width: no layout on every change */
+    transform: scaleX(calc(var(--circle-loader-progress, 0) / 100));
+    transform-origin: 0 50%;
+    transition: transform 0.2s ease;
+}
+
+.loading-progress-label {
+    min-width: 3.2em;
+    text-align: right;
+}
+
+.loading-overlay--transparent .loading-progress {
+    color: inherit;
+}
+
 /* Loader inside a specific element (target option) */
 .loading-overlay.loading-overlay--scoped {
     position: absolute;
-    z-index: 10;
+    z-index: var(--circle-loader-z-index, 10);
 }
 
 /* ---- Backgrounds (background option) ---- */
