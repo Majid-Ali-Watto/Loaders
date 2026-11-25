@@ -1,0 +1,11 @@
+/* pulse: a circle that grows and fades */
+.loading-spinner.loading-spinner--pulse {
+    border: none;
+    background-color: var(--circle-loader-color, #3b82f6);
+    animation: circle-loader-pulse calc(1.2s / var(--circle-loader-speed, 1)) ease-out infinite;
+}
+
+@keyframes circle-loader-pulse {
+    0% { transform: scale(0); opacity: 1; }
+    100% { transform: scale(1); opacity: 0; }
+}

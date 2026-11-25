@@ -1,0 +1,23 @@
+/* dual: two rings spinning in opposite directions */
+.loading-spinner.loading-spinner--dual {
+    position: relative;
+    border: var(--circle-loader-thickness, 4px) solid transparent;
+    border-top-color: var(--circle-loader-color, #3b82f6);
+    border-bottom-color: var(--circle-loader-color, #3b82f6);
+    animation: spin calc(1.2s / var(--circle-loader-speed, 1)) linear infinite;
+}
+
+.loading-spinner--dual::before {
+    content: "";
+    position: absolute;
+    top: calc(var(--circle-loader-thickness, 4px) * 2);
+    right: calc(var(--circle-loader-thickness, 4px) * 2);
+    bottom: calc(var(--circle-loader-thickness, 4px) * 2);
+    left: calc(var(--circle-loader-thickness, 4px) * 2);
+    border: var(--circle-loader-thickness, 4px) solid transparent;
+    border-left-color: var(--circle-loader-secondary-color, var(--circle-loader-color, #3b82f6));
+    border-right-color: var(--circle-loader-secondary-color, var(--circle-loader-color, #3b82f6));
+    border-radius: 50%;
+    opacity: 0.6;
+    animation: spin calc(0.6s / var(--circle-loader-speed, 1)) linear infinite reverse;
+}

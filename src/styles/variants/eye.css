@@ -1,0 +1,29 @@
+/* eye: an eye looking left and right, blinking now and then */
+.loading-spinner.loading-spinner--eye {
+    position: relative;
+    border: var(--circle-loader-thickness, 3px) solid var(--circle-loader-color, #3b82f6);
+    animation: circle-loader-blink calc(2.4s / var(--circle-loader-speed, 1)) ease-in-out infinite;
+}
+
+.loading-spinner--eye::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 36%;
+    height: 36%;
+    margin: -18% 0 0 -18%;
+    border-radius: 50%;
+    background-color: var(--circle-loader-secondary-color, var(--circle-loader-color, #3b82f6));
+    animation: circle-loader-look calc(2.4s / var(--circle-loader-speed, 1)) ease-in-out infinite;
+}
+
+@keyframes circle-loader-blink {
+    0%, 44%, 52%, 100% { transform: scaleY(1); }
+    48% { transform: scaleY(0.1); }
+}
+
+@keyframes circle-loader-look {
+    0%, 15%, 85%, 100% { transform: translateX(-55%); }
+    35%, 65% { transform: translateX(55%); }
+}

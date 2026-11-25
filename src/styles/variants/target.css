@@ -1,0 +1,23 @@
+/* target: three rings lighting up from the outside in, like a target */
+.loading-spinner.loading-spinner--target {
+    position: relative;
+    border: none;
+    animation: none;
+}
+
+.loading-spinner--target > span {
+    position: absolute;
+    border: var(--circle-loader-thickness, 3px) solid var(--circle-loader-color, #3b82f6);
+    border-radius: 50%;
+    opacity: 0.2;
+    animation: circle-loader-target calc(1.2s / var(--circle-loader-speed, 1)) ease-in-out infinite;
+}
+
+.loading-spinner--target > span:nth-child(1) { top: 0; right: 0; bottom: 0; left: 0; }
+.loading-spinner--target > span:nth-child(2) { top: 20%; right: 20%; bottom: 20%; left: 20%; border-color: var(--circle-loader-secondary-color, var(--circle-loader-color, #3b82f6)); animation-delay: calc(0.2s / var(--circle-loader-speed, 1)); }
+.loading-spinner--target > span:nth-child(3) { top: 40%; right: 40%; bottom: 40%; left: 40%; background-color: var(--circle-loader-color, #3b82f6); animation-delay: calc(0.4s / var(--circle-loader-speed, 1)); }
+
+@keyframes circle-loader-target {
+    0%, 60%, 100% { opacity: 0.2; transform: scale(0.92); }
+    25% { opacity: 1; transform: scale(1); }
+}

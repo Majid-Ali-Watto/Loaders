@@ -1,0 +1,13 @@
+/* heartbeat: a circle beating twice, then resting */
+.loading-spinner.loading-spinner--heartbeat {
+    border: none;
+    background-color: var(--circle-loader-color, #3b82f6);
+    animation: circle-loader-heartbeat calc(1.2s / var(--circle-loader-speed, 1)) ease-in-out infinite;
+}
+
+@keyframes circle-loader-heartbeat {
+    0%, 60%, 100% { transform: scale(0.7); }
+    14% { transform: scale(1); }
+    28% { transform: scale(0.78); }
+    42% { transform: scale(0.95); }
+}

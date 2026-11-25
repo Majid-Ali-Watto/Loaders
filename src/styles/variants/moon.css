@@ -1,0 +1,7 @@
+/* moon: a crescent going round a faint disc */
+.loading-spinner.loading-spinner--moon {
+    border: none;
+    background-color: var(--circle-loader-track, rgba(255, 255, 255, 0.15));
+    box-shadow: inset calc(var(--circle-loader-size, 50px) * -0.22) 0 0 0 var(--circle-loader-color, #3b82f6);
+    animation: spin calc(1.4s / var(--circle-loader-speed, 1)) linear infinite;
+}

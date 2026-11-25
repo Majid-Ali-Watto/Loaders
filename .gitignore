@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# generated from types/index.d.ts by npm run build
+types/*.d.mts

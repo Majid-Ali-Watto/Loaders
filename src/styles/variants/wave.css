@@ -1,0 +1,35 @@
+/* wave: eight dots in a circle, moving out and back in turn like a wave */
+.loading-spinner.loading-spinner--wave {
+    position: relative;
+    border: none;
+    animation: none;
+}
+
+.loading-spinner--wave > span {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 12%;
+    height: 12%;
+    margin: -6% 0 0 -6%;
+    border-radius: 50%;
+    background-color: var(--circle-loader-color, #3b82f6);
+    transform: rotate(var(--angle)) translateY(-220%);
+    animation: circle-loader-wave calc(1.2s / var(--circle-loader-speed, 1)) ease-in-out infinite;
+}
+
+.loading-spinner--wave > span:nth-child(even) { background-color: var(--circle-loader-secondary-color, var(--circle-loader-color, #3b82f6)); }
+
+.loading-spinner--wave > span:nth-child(1) { --angle: 0deg; animation-delay: calc(-1.2s / var(--circle-loader-speed, 1)); }
+.loading-spinner--wave > span:nth-child(2) { --angle: 45deg; animation-delay: calc(-1.05s / var(--circle-loader-speed, 1)); }
+.loading-spinner--wave > span:nth-child(3) { --angle: 90deg; animation-delay: calc(-0.9s / var(--circle-loader-speed, 1)); }
+.loading-spinner--wave > span:nth-child(4) { --angle: 135deg; animation-delay: calc(-0.75s / var(--circle-loader-speed, 1)); }
+.loading-spinner--wave > span:nth-child(5) { --angle: 180deg; animation-delay: calc(-0.6s / var(--circle-loader-speed, 1)); }
+.loading-spinner--wave > span:nth-child(6) { --angle: 225deg; animation-delay: calc(-0.45s / var(--circle-loader-speed, 1)); }
+.loading-spinner--wave > span:nth-child(7) { --angle: 270deg; animation-delay: calc(-0.3s / var(--circle-loader-speed, 1)); }
+.loading-spinner--wave > span:nth-child(8) { --angle: 315deg; animation-delay: calc(-0.15s / var(--circle-loader-speed, 1)); }
+
+@keyframes circle-loader-wave {
+    0%, 100% { transform: rotate(var(--angle)) translateY(-200%); }
+    50% { transform: rotate(var(--angle)) translateY(-320%); }
+}

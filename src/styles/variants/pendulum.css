@@ -1,0 +1,23 @@
+/* pendulum: a ball swinging back and forth along the bottom of a ring */
+.loading-spinner.loading-spinner--pendulum {
+    position: relative;
+    border: var(--circle-loader-thickness, 2px) solid var(--circle-loader-track, rgba(255, 255, 255, 0.15));
+    animation: circle-loader-pendulum calc(0.9s / var(--circle-loader-speed, 1)) ease-in-out infinite alternate;
+}
+
+.loading-spinner--pendulum::after {
+    content: "";
+    position: absolute;
+    top: calc(-7px - var(--circle-loader-thickness, 2px) / 2);
+    left: 50%;
+    width: 14px;
+    height: 14px;
+    margin-left: -7px;
+    border-radius: 50%;
+    background-color: var(--circle-loader-color, #3b82f6);
+}
+
+@keyframes circle-loader-pendulum {
+    0% { transform: rotate(110deg); }
+    100% { transform: rotate(250deg); }
+}

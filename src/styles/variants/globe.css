@@ -1,0 +1,39 @@
+/* globe: a globe spinning, its lines of longitude turning */
+.loading-spinner.loading-spinner--globe {
+    position: relative;
+    border: var(--circle-loader-thickness, 2px) solid var(--circle-loader-color, #3b82f6);
+    animation: none;
+}
+
+.loading-spinner--globe::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: var(--circle-loader-thickness, 2px);
+    margin-top: calc(var(--circle-loader-thickness, 2px) / -2);
+    background-color: var(--circle-loader-color, #3b82f6);
+    opacity: 0.6;
+}
+
+.loading-spinner--globe > span {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    border: var(--circle-loader-thickness, 2px) solid var(--circle-loader-secondary-color, var(--circle-loader-color, #3b82f6));
+    border-radius: 50%;
+    animation: circle-loader-globe calc(2s / var(--circle-loader-speed, 1)) linear infinite;
+}
+
+.loading-spinner--globe > span:nth-child(2) { animation-delay: calc(-1s / var(--circle-loader-speed, 1)); }
+
+@keyframes circle-loader-globe {
+    0% { transform: scaleX(1); }
+    25% { transform: scaleX(0.7); }
+    50% { transform: scaleX(0); }
+    75% { transform: scaleX(0.7); }
+    100% { transform: scaleX(1); }
+}

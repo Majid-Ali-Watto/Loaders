@@ -1,0 +1,19 @@
+/* radar: a sweep turning inside a ring, like a radar screen */
+.loading-spinner.loading-spinner--radar {
+    position: relative;
+    overflow: hidden;
+    border: var(--circle-loader-thickness, 2px) solid var(--circle-loader-color, #3b82f6);
+    animation: none;
+}
+
+.loading-spinner--radar::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, transparent 70%, var(--circle-loader-secondary-color, var(--circle-loader-color, #3b82f6)));
+    animation: spin calc(1.4s / var(--circle-loader-speed, 1)) linear infinite;
+}

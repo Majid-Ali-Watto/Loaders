@@ -1,0 +1,11 @@
+/* squish: a circle squashing and stretching */
+.loading-spinner.loading-spinner--squish {
+    border: none;
+    background-color: var(--circle-loader-color, #3b82f6);
+    animation: circle-loader-squish calc(1s / var(--circle-loader-speed, 1)) ease-in-out infinite;
+}
+
+@keyframes circle-loader-squish {
+    0%, 100% { transform: scale(1, 0.6); }
+    50% { transform: scale(0.6, 1); }
+}

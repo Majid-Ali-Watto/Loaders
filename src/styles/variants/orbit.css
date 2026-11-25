@@ -1,0 +1,18 @@
+/* orbit: a dot travelling around a faint ring */
+.loading-spinner.loading-spinner--orbit {
+    position: relative;
+    border: var(--circle-loader-thickness, 2px) solid var(--circle-loader-track, rgba(255, 255, 255, 0.15));
+    animation: spin calc(1s / var(--circle-loader-speed, 1)) linear infinite;
+}
+
+.loading-spinner--orbit::after {
+    content: "";
+    position: absolute;
+    top: calc(-6px - var(--circle-loader-thickness, 2px) / 2);
+    left: 50%;
+    width: 12px;
+    height: 12px;
+    margin-left: -6px;
+    border-radius: 50%;
+    background-color: var(--circle-loader-color, #3b82f6);
+}

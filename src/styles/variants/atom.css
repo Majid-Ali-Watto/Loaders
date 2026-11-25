@@ -1,0 +1,39 @@
+/* atom: three tilted orbits around a nucleus, each with an electron running round */
+.loading-spinner.loading-spinner--atom {
+    position: relative;
+    border: none;
+    background: radial-gradient(circle, var(--circle-loader-color, #3b82f6) 0 calc(var(--circle-loader-size, 50px) * 0.08), transparent calc(var(--circle-loader-size, 50px) * 0.08 + 1px));
+    animation: none;
+}
+
+.loading-spinner--atom > span {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+
+.loading-spinner--atom > span::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    border: var(--circle-loader-thickness, 3px) solid var(--circle-loader-track, rgba(255, 255, 255, 0.15));
+    border-top-color: var(--circle-loader-color, #3b82f6);
+    border-radius: 50%;
+    animation: circle-loader-atom calc(1s / var(--circle-loader-speed, 1)) linear infinite;
+}
+
+.loading-spinner--atom > span:nth-child(1) { transform: rotate(0deg); }
+.loading-spinner--atom > span:nth-child(2) { transform: rotate(60deg); }
+.loading-spinner--atom > span:nth-child(3) { transform: rotate(120deg); }
+.loading-spinner--atom > span:nth-child(2)::before { border-top-color: var(--circle-loader-secondary-color, var(--circle-loader-color, #3b82f6)); animation-delay: calc(-0.33s / var(--circle-loader-speed, 1)); }
+.loading-spinner--atom > span:nth-child(3)::before { animation-delay: calc(-0.66s / var(--circle-loader-speed, 1)); }
+
+@keyframes circle-loader-atom {
+    0% { transform: rotateX(70deg) rotate(0deg); }
+    100% { transform: rotateX(70deg) rotate(360deg); }
+}

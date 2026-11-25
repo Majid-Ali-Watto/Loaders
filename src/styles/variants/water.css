@@ -1,0 +1,27 @@
+/* water: waves rolling on the water inside a ring */
+.loading-spinner.loading-spinner--water {
+    position: relative;
+    overflow: hidden;
+    border: var(--circle-loader-thickness, 3px) solid var(--circle-loader-color, #3b82f6);
+    animation: none;
+}
+
+.loading-spinner--water::before,
+.loading-spinner--water::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    border-radius: 40%;
+    background-color: var(--circle-loader-secondary-color, var(--circle-loader-color, #3b82f6));
+    animation: spin calc(2.4s / var(--circle-loader-speed, 1)) linear infinite;
+}
+
+.loading-spinner--water::before {
+    top: 44%;
+    border-radius: 45%;
+    opacity: 0.4;
+    animation-duration: calc(3.2s / var(--circle-loader-speed, 1));
+}

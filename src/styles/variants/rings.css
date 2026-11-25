@@ -1,0 +1,29 @@
+/* rings: three rings inside each other, turning in alternate directions */
+.loading-spinner.loading-spinner--rings {
+    position: relative;
+    border: none;
+    animation: none;
+}
+
+.loading-spinner--rings > span {
+    position: absolute;
+    border: var(--circle-loader-thickness, 3px) solid transparent;
+    border-top-color: var(--circle-loader-color, #3b82f6);
+    border-radius: 50%;
+}
+
+.loading-spinner--rings > span:nth-child(1) {
+    top: 0; right: 0; bottom: 0; left: 0;
+    animation: spin calc(1.5s / var(--circle-loader-speed, 1)) linear infinite;
+}
+
+.loading-spinner--rings > span:nth-child(2) {
+    top: 18%; right: 18%; bottom: 18%; left: 18%;
+    border-top-color: var(--circle-loader-secondary-color, var(--circle-loader-color, #3b82f6));
+    animation: spin calc(1.1s / var(--circle-loader-speed, 1)) linear infinite reverse;
+}
+
+.loading-spinner--rings > span:nth-child(3) {
+    top: 36%; right: 36%; bottom: 36%; left: 36%;
+    animation: spin calc(0.8s / var(--circle-loader-speed, 1)) linear infinite;
+}

@@ -1,0 +1,26 @@
+/* sun: a sun with rays turning and glowing */
+.loading-spinner.loading-spinner--sun {
+    position: relative;
+    border: none;
+    background: radial-gradient(farthest-side, var(--circle-loader-color, #3b82f6) 0 42%, transparent 44%);
+    animation: spin calc(6s / var(--circle-loader-speed, 1)) linear infinite;
+}
+
+.loading-spinner--sun::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    border-radius: 50%;
+    background: repeating-conic-gradient(var(--circle-loader-secondary-color, var(--circle-loader-color, #3b82f6)) 0 12deg, transparent 12deg 30deg);
+    -webkit-mask: radial-gradient(farthest-side, transparent 58%, #000 60%);
+    mask: radial-gradient(farthest-side, transparent 58%, #000 60%);
+    animation: circle-loader-rays calc(0.8s / var(--circle-loader-speed, 1)) ease-in-out infinite alternate;
+}
+
+@keyframes circle-loader-rays {
+    0% { transform: scale(0.82); opacity: 0.5; }
+    100% { transform: scale(1); opacity: 1; }
+}

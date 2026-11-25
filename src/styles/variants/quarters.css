@@ -1,0 +1,27 @@
+/* quarters: four quarters of a circle appearing one after another, then fading */
+.loading-spinner.loading-spinner--quarters {
+    position: relative;
+    border: none;
+    animation: none;
+}
+
+.loading-spinner--quarters > span {
+    position: absolute;
+    width: 50%;
+    height: 50%;
+    background-color: var(--circle-loader-color, #3b82f6);
+    opacity: 0;
+    animation: circle-loader-quarters calc(1.6s / var(--circle-loader-speed, 1)) ease-in-out infinite;
+}
+
+.loading-spinner--quarters > span:nth-child(1) { top: 0; right: 0; border-radius: 0 100% 0 0; transform-origin: 0 100%; }
+.loading-spinner--quarters > span:nth-child(2) { bottom: 0; right: 0; border-radius: 0 0 100% 0; transform-origin: 0 0; animation-delay: calc(0.2s / var(--circle-loader-speed, 1)); }
+.loading-spinner--quarters > span:nth-child(3) { bottom: 0; left: 0; border-radius: 0 0 0 100%; transform-origin: 100% 0; animation-delay: calc(0.4s / var(--circle-loader-speed, 1)); }
+.loading-spinner--quarters > span:nth-child(4) { top: 0; left: 0; border-radius: 100% 0 0 0; transform-origin: 100% 100%; animation-delay: calc(0.6s / var(--circle-loader-speed, 1)); }
+.loading-spinner--quarters > span:nth-child(even) { background-color: var(--circle-loader-secondary-color, var(--circle-loader-color, #3b82f6)); }
+
+@keyframes circle-loader-quarters {
+    0% { opacity: 0; transform: scale(0.6); }
+    15%, 55% { opacity: 1; transform: scale(0.92); }
+    75%, 100% { opacity: 0; transform: scale(0.6); }
+}

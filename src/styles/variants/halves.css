@@ -1,0 +1,6 @@
+/* halves: a circle in two colors, turning with a pause */
+.loading-spinner.loading-spinner--halves {
+    border: none;
+    background: conic-gradient(var(--circle-loader-color, #3b82f6) 0 50%, var(--circle-loader-secondary-color, var(--circle-loader-track, rgba(255, 255, 255, 0.15))) 0);
+    animation: spin calc(1.2s / var(--circle-loader-speed, 1)) cubic-bezier(0.6, 0, 0.4, 1) infinite;
+}

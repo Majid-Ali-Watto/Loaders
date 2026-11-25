@@ -1,0 +1,8 @@
+/* segments: a ring of segments in two colors, turning */
+.loading-spinner.loading-spinner--segments {
+    border: none;
+    background: repeating-conic-gradient(var(--circle-loader-color, #3b82f6) 0 38deg, transparent 38deg 45deg, var(--circle-loader-secondary-color, var(--circle-loader-color, #3b82f6)) 45deg 83deg, transparent 83deg 90deg);
+    -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - var(--circle-loader-thickness, 6px)), #000 calc(100% - var(--circle-loader-thickness, 6px) + 1px));
+    mask: radial-gradient(farthest-side, transparent calc(100% - var(--circle-loader-thickness, 6px)), #000 calc(100% - var(--circle-loader-thickness, 6px) + 1px));
+    animation: spin calc(1.8s / var(--circle-loader-speed, 1)) linear infinite;
+}

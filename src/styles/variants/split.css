@@ -1,0 +1,39 @@
+/* split: a circle splitting into two halves and joining again while it turns */
+.loading-spinner.loading-spinner--split {
+    position: relative;
+    border: none;
+    animation: spin calc(3.2s / var(--circle-loader-speed, 1)) linear infinite;
+}
+
+.loading-spinner--split::before,
+.loading-spinner--split::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 50%;
+    background-color: var(--circle-loader-color, #3b82f6);
+    animation: circle-loader-split-left calc(1.6s / var(--circle-loader-speed, 1)) ease-in-out infinite;
+}
+
+.loading-spinner--split::before {
+    left: 0;
+    border-radius: 100% 0 0 100% / 50% 0 0 50%;
+}
+
+.loading-spinner--split::after {
+    right: 0;
+    border-radius: 0 100% 100% 0 / 0 50% 50% 0;
+    background-color: var(--circle-loader-secondary-color, var(--circle-loader-color, #3b82f6));
+    animation-name: circle-loader-split-right;
+}
+
+@keyframes circle-loader-split-left {
+    0%, 20%, 100% { transform: translateX(0); }
+    50%, 70% { transform: translateX(-22%); }
+}
+
+@keyframes circle-loader-split-right {
+    0%, 20%, 100% { transform: translateX(0); }
+    50%, 70% { transform: translateX(22%); }
+}

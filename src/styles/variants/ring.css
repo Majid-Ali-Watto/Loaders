@@ -1,0 +1,6 @@
+/* ring: thin ring with one colored arc spinning */
+.loading-spinner.loading-spinner--ring {
+    border: var(--circle-loader-thickness, 4px) solid var(--circle-loader-track, rgba(255, 255, 255, 0.15));
+    border-top-color: var(--circle-loader-color, #3b82f6);
+    animation: spin calc(0.8s / var(--circle-loader-speed, 1)) linear infinite;
+}

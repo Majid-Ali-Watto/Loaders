@@ -1,0 +1,11 @@
+/* flip: a circle flipping like a coin */
+.loading-spinner.loading-spinner--flip {
+    border: none;
+    background-color: var(--circle-loader-color, #3b82f6);
+    animation: circle-loader-flip calc(1.2s / var(--circle-loader-speed, 1)) ease-in-out infinite;
+}
+
+@keyframes circle-loader-flip {
+    0% { transform: perspective(120px) rotateY(0deg); }
+    100% { transform: perspective(120px) rotateY(360deg); }
+}

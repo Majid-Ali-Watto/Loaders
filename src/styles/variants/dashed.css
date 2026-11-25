@@ -1,0 +1,5 @@
+/* dashed: a dashed ring turning slowly */
+.loading-spinner.loading-spinner--dashed {
+    border: var(--circle-loader-thickness, 4px) dashed var(--circle-loader-color, #3b82f6);
+    animation: spin calc(2.4s / var(--circle-loader-speed, 1)) linear infinite;
+}

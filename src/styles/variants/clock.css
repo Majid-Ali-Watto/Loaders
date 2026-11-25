@@ -1,0 +1,29 @@
+/* clock: two hands sweeping round a clock face */
+.loading-spinner.loading-spinner--clock {
+    position: relative;
+    border: var(--circle-loader-thickness, 3px) solid var(--circle-loader-color, #3b82f6);
+    animation: none;
+}
+
+.loading-spinner--clock::before,
+.loading-spinner--clock::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: 50%;
+    width: 3px;
+    margin-left: -1.5px;
+    border-radius: 2px;
+    background-color: var(--circle-loader-secondary-color, var(--circle-loader-color, #3b82f6));
+    transform-origin: 50% 100%;
+}
+
+.loading-spinner--clock::before {
+    height: 38%;
+    animation: spin calc(1.2s / var(--circle-loader-speed, 1)) linear infinite;
+}
+
+.loading-spinner--clock::after {
+    height: 26%;
+    animation: spin calc(7.2s / var(--circle-loader-speed, 1)) linear infinite;
+}

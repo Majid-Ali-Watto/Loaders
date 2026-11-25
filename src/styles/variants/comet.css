@@ -1,0 +1,8 @@
+/* comet: a ring with a fading tail */
+.loading-spinner.loading-spinner--comet {
+    border: none;
+    background: conic-gradient(from 0deg, transparent 10%, var(--circle-loader-color, #3b82f6));
+    -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - var(--circle-loader-thickness, 6px)), #000 calc(100% - var(--circle-loader-thickness, 6px) + 1px));
+    mask: radial-gradient(farthest-side, transparent calc(100% - var(--circle-loader-thickness, 6px)), #000 calc(100% - var(--circle-loader-thickness, 6px) + 1px));
+    animation: spin calc(0.9s / var(--circle-loader-speed, 1)) linear infinite;
+}

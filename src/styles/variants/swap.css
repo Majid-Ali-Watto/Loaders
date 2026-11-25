@@ -1,0 +1,25 @@
+/* swap: two dots trading places round a circle, with a pause */
+.loading-spinner.loading-spinner--swap {
+    position: relative;
+    border: none;
+    animation: circle-loader-swap calc(1.6s / var(--circle-loader-speed, 1)) cubic-bezier(0.6, 0, 0.4, 1) infinite;
+}
+
+.loading-spinner--swap > span {
+    position: absolute;
+    top: 50%;
+    width: 32%;
+    height: 32%;
+    margin-top: -16%;
+    border-radius: 50%;
+    background-color: var(--circle-loader-color, #3b82f6);
+}
+
+.loading-spinner--swap > span:nth-child(1) { left: 0; }
+.loading-spinner--swap > span:nth-child(2) { right: 0; background-color: var(--circle-loader-secondary-color, var(--circle-loader-color, #3b82f6)); }
+
+@keyframes circle-loader-swap {
+    0% { transform: rotate(0deg); }
+    40%, 50% { transform: rotate(180deg); }
+    90%, 100% { transform: rotate(360deg); }
+}

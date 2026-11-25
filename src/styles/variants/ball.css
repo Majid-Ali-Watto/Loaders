@@ -1,0 +1,25 @@
+/* ball: a ball bouncing inside a ring */
+.loading-spinner.loading-spinner--ball {
+    position: relative;
+    border: var(--circle-loader-thickness, 2px) solid var(--circle-loader-track, rgba(255, 255, 255, 0.15));
+    animation: none;
+}
+
+.loading-spinner--ball::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    width: 28%;
+    height: 28%;
+    margin-left: -14%;
+    border-radius: 50%;
+    background-color: var(--circle-loader-color, #3b82f6);
+    transform-origin: 50% 100%;
+    animation: circle-loader-ball calc(0.5s / var(--circle-loader-speed, 1)) cubic-bezier(0.5, 0, 1, 0.5) infinite alternate;
+}
+
+@keyframes circle-loader-ball {
+    0% { top: 8%; transform: scale(1, 1); }
+    85% { transform: scale(1, 1); }
+    100% { top: 64%; transform: scale(1.25, 0.8); }
+}

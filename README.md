@@ -1,70 +1,678 @@
-# Circle-Loader
+# circle-loader
 
-**circle-loader** is a simple, lightweight loader component for React and JavaScript applications. It allows you to easily display a loading spinner while data is being fetched or processed, ensuring a smooth user experience.
+[![npm version](https://img.shields.io/npm/v/circle-loader)](https://www.npmjs.com/package/circle-loader)
+[![license](https://img.shields.io/npm/l/circle-loader)](#license)
 
-**circle-loader**  can be programmatically started and stopped. It dynamically injects a loading spinner into the DOM and removes it when loading is complete.
+**50 circular loading spinners with one small API.** Show a loader while data loads, over the whole page or inside one element. No dependencies. Works with React, Vue, Angular, Svelte, Next.js, Nuxt and plain JavaScript.
 
-## Installation
+<p>
+	<img src="docs/variants/circle.svg" width="48" height="48" alt="circle loader">
+	<img src="docs/variants/ring.svg" width="48" height="48" alt="ring loader">
+	<img src="docs/variants/dual.svg" width="48" height="48" alt="dual loader">
+	<img src="docs/variants/dots.svg" width="48" height="48" alt="dots loader">
+	<img src="docs/variants/arc.svg" width="48" height="48" alt="arc loader">
+	<img src="docs/variants/comet.svg" width="48" height="48" alt="comet loader">
+	<img src="docs/variants/glow.svg" width="48" height="48" alt="glow loader">
+	<img src="docs/variants/planets.svg" width="48" height="48" alt="planets loader">
+	<img src="docs/variants/flower.svg" width="48" height="48" alt="flower loader">
+	<img src="docs/variants/donut.svg" width="48" height="48" alt="donut loader">
+</p>
 
-You can install the package via npm:
+```javascript
+import { Loader } from "circle-loader";
+
+await Loader.wrap(fetch("/api/users"), { variant: "arc", color: "#10b981" }, "Loading users");
+```
+
+## Features
+
+- **50 variants**, every one a circle, with animated previews [below](#variants).
+- **One call does it:** `Loader.wrap(promise)` shows the loader and always closes it, even on errors.
+- **Set your style once** with `Loader.configure()`, and use named presets where you need a different look.
+- **Style options for everything:** colors, size, thickness, speed, background (dark, light, dim, blur, transparent or any color) and text.
+- **No flicker:** `delay` skips the loader for fast requests, `minDuration` stops it blinking.
+- **Overlapping requests just work:** calls are counted, so one request finishing doesn't hide another's loader.
+- **Small and tree-shakable:** under 5 KB gzipped for the core plus one variant. Unused variants are left out of your bundle.
+- **Safe for server rendering:** importing it never touches the page.
+- **Accessible:** announced to screen readers, and slower for users who prefer reduced motion.
+- **TypeScript types included.**
+
+Try every option in the playground, in a light or dark theme: run `npm run demo` in this repository.
+
+## Contents
+
+- [Install](#install)
+- [Quick start](#quick-start)
+- [Set your defaults once](#set-your-defaults-once)
+- [Options](#options)
+- [Methods](#methods)
+- [Variants](#variants)
+- [Colors and sizes](#colors-and-sizes)
+- [Text](#text)
+- [Background](#background)
+- [Speed](#speed)
+- [Changing the look while it's showing](#changing-the-look-while-its-showing)
+- [Smaller bundles](#smaller-bundles-import-only-what-you-need)
+- [Customizing with CSS](#customizing-with-css)
+- [Frameworks: React, Next.js, Vue, Nuxt](#frameworks)
+- [Accessibility](#accessibility)
+- [Development](#development)
+- [Author](#author) · [License](#license)
+
+## Install
 
 ```bash
 npm install circle-loader
 ```
-## Usage
 
-Import the ``Loader`` class and use the `start` and `close` methods to control the loader.
+Or without a build step, from a CDN:
 
-By default, the loader will display a simple loading spinner with the text "Loading...". The default styles are minimal, and you can customize the appearance by passing custom styles and text.
-```javascript
-import { Loader } from 'circle-loader';
-
-// Start the loader
-Loader.start();
-
-
-// Stop the loader
-Loader.close();
-
+```html
+<script src="https://unpkg.com/circle-loader/dist/circle-loader.min.js"></script>
+<script>
+	const { Loader } = CircleLoader;
+	Loader.start();
+</script>
 ```
 
-## Custom Styles
+For production, pin a version, e.g. `https://unpkg.com/circle-loader@1.1.0/dist/circle-loader.min.js`.
 
-You can customize the Loader by providing a styles object. The styles object can contain keys for the overlay, spinner, and text. The following keys are supported:
+## Quick start
 
-1. **loadingOverlayStyles**: Styles for the overlay that covers the screen.
-2. **loadingSpinnerStyles**: Styles for the spinner element.
-3. **loadingTextStyles**: Styles for the loading text.
+```javascript
+import { Loader } from "circle-loader";
 
-**Note**:The sequence of arguments does not matter, but it only accepts two arguments: a loading text string and a styles object.
+Loader.start();   // show it
+Loader.close();   // hide it
+```
 
-### Example of Custom Styles
+**Wrap a promise (recommended).** The loader shows while the promise or async function runs, and closes afterwards, even if it throws. You can't forget to close it:
+
+```javascript
+const users = await Loader.wrap(fetch("/api/users").then((r) => r.json()), "Loading users");
+
+await Loader.wrap(async () => {
+	await saveForm();
+}, { variant: "dots" });
+```
+
+**Inside one element** instead of the whole page:
+
+```javascript
+Loader.start({ target: "#users-table", text: "Loading users" });
+Loader.close("#users-table"); // pass the same target to close it
+```
+
+**No flicker:** skip the loader for fast requests, and keep it long enough not to blink:
+
+```javascript
+Loader.start({ delay: 200, minDuration: 400 });
+```
+
+**Text and options in any order.** `start()` takes a text string, an options object, or both:
+
+```javascript
+Loader.start("Saving...");
+Loader.start("Saving...", { variant: "arc" });
+Loader.start({ variant: "arc" }, "Saving...");
+```
+
+**Overlapping requests.** Calls are counted. The loader stays until every `start()` has a matching `close()`, so two requests running at once don't hide each other's loader:
+
+```javascript
+Loader.start();   // request A
+Loader.start();   // request B
+Loader.close();   // A finished: still showing
+Loader.close();   // B finished: hidden
+```
+
+`Loader.forceClose()` removes it immediately, whatever the count. While a loader is showing, another `start()` only changes the text and keeps the first call's look. To change the look, use [`setStyle`](#changing-the-look-while-its-showing). For a differently styled loader at the same time, give it its own `target`.
+
+## Set your defaults once
+
+Call `Loader.configure()` once when your app starts. Every `start()` and `wrap()` afterwards uses those settings, so most calls pass nothing:
+
+```javascript
+// main.js (or wherever your app starts)
+import { Loader } from "circle-loader";
+
+Loader.configure({
+	variant: "arc",
+	background: "blur",
+	color: "#10b981",
+	delay: 200,
+	minDuration: 400
+});
+```
+
+```javascript
+// anywhere in your app
+Loader.start();                               // arc, blur, green, with the delay
+Loader.start("Saving...");                    // same look, different text
+await Loader.wrap(fetchUsers());              // same look
+Loader.start({ variant: "dots" });            // a different loader here, only this call
+Loader.start({ target: "#table", size: 30 }); // smaller, inside the table
+```
+
+**How settings combine:** built-in defaults, then your `configure()` defaults, then the preset (below), then the options passed to the call. Each layer only changes what it sets, so a call passing `{ variant: "dots" }` still gets your color, background and delay. Pass `null` to turn a default off for one call: `Loader.start({ color: null })`.
+
+Every option can be a default except `target` and `preset`.
+
+### Presets: a few named looks
+
+If your app uses a few different loaders, name them once and pick one by name:
+
+```javascript
+Loader.configure({
+	variant: "arc",                // the defaults
+	color: "#10b981",
+	presets: {
+		save:  { variant: "dots", text: "Saving...", delay: 0 },
+		page:  { background: "blur", size: 70, text: false },
+		table: { target: "#users-table", variant: "spokes", text: false }
+	}
+});
+
+Loader.start({ preset: "save" });                       // dots, "Saving...", green from the defaults
+await Loader.wrap(loadPage(), { preset: "page" });
+Loader.start({ preset: "table" });                      // inside #users-table
+Loader.close({ preset: "table" });                      // closes that same one
+Loader.start({ preset: "save", text: "Uploading..." }); // the call still wins
+```
+
+- A preset fills in on top of the defaults, so it only needs what's different.
+- A preset can include a `target`. Pass `{ preset: "table" }` to `close()`, `setStyle()` or `isActive()` and they find the same element.
+- `Loader.setStyle({ preset: "save" })` switches an open loader to that preset's look.
+- An unknown preset name logs a warning, and the defaults are used.
+
+### Changing the config
+
+```javascript
+Loader.configure({ color: "#f43f5e" });           // merges: only the color changes
+Loader.configure({ delay: null });                // removes one default
+Loader.configure({ presets: { page: null } });    // removes one preset
+Loader.configure(null);                           // removes all defaults and presets
+
+Loader.getConfig(); // { variant: "arc", color: "#f43f5e", presets: { save: {...}, table: {...} } }
+```
+
+- New settings apply to loaders started afterwards. An open loader keeps its look; use `setStyle` to change it.
+- `configure()` doesn't touch the page, so it's safe during server rendering in Next.js and Nuxt.
+- With `circle-loader/core`, pass variant objects: `Loader.configure({ variant: arc })`, in presets too.
+
+## Options
+
+Pass these to `start()`, `wrap()` or `configure()`:
+
+| Option | Type | Description |
+|---|---|---|
+| `variant` | `string` or variant object | Spinner style: `circle` (default) or one of the other 29. See [Variants](#variants). |
+| `text` | `string \| string[] \| false \| null` | Text under the spinner. A list of messages takes turns. `""`, `false` or `null` shows no text. Default `"Loading..."`. See [Text](#text). |
+| `textInterval` | `number` (ms) | Time between messages when `text` is a list. Default `2000`. |
+| `color` | `string` | Main spinner color, any CSS color. See [Colors and sizes](#colors-and-sizes). |
+| `secondaryColor` | `string` | Second color for two-part variants. Default: same as `color`. |
+| `trackColor` | `string` | The faint ring behind `ring`, `orbit`, `moon`, `halves`, `planets`, `pendulum`, `donut`, `atom`, `ball`, `stripes` and `typing`. |
+| `textColor` | `string` | Text color. Turns off the automatic text color. |
+| `size` | `number \| string` | Spinner width and height. A number means pixels. Default `50`. |
+| `thickness` | `number \| string` | Line width of ring-style variants. A number means pixels. |
+| `textSize` | `number \| string` | Text font size. A number means pixels. Default `18`. |
+| `background` | `string` | `dark` (default), `light`, `dim`, `blur`, `transparent`, or any CSS color. See [Background](#background). |
+| `speed` | `string \| number` | `slow`, `normal` (default), `fast`, or a multiplier such as `1.5`. See [Speed](#speed). |
+| `target` | `Element \| string` | Show the loader inside this element (or CSS selector) instead of over the whole page. |
+| `preset` | `string` | Use a named preset from [`configure()`](#presets-a-few-named-looks). Options passed next to it win. |
+| `delay` | `number` (ms) | Wait before showing. If closed sooner, the loader never appears. |
+| `minDuration` | `number` (ms) | Once shown, keep it visible at least this long. |
+| `loadingOverlayStyles` | object | Inline styles for the overlay. See [Style objects](#style-objects). |
+| `loadingSpinnerStyles` | object | Inline styles for the spinner. |
+| `loadingTextStyles` | object | Inline styles for the text. |
+
+## Methods
+
+| Method | Description |
+|---|---|
+| `Loader.start(text?, options?)` | Show the loader. Text and options can go in either order. |
+| `Loader.close(target?)` | Close one `start()`. Hides once every `start()` is closed. Pass the same target (or options) as `start()`. |
+| `Loader.wrap(promiseOrFn, text?, options?)` | Show the loader while it runs, then close it, even if it throws. Returns the result. |
+| `Loader.update(text, target?)` | Change the text of an open loader. Takes the same values as `text`. `update()` brings back the default text. |
+| `Loader.setStyle(style, target?)` | Change the look of an open loader. See [Changing the look](#changing-the-look-while-its-showing). |
+| `Loader.configure(config)` | Set defaults and presets for every later call. See [Set your defaults once](#set-your-defaults-once). |
+| `Loader.getConfig()` | The current defaults and presets. |
+| `Loader.register(...variants)` | Make variants usable by name, with `circle-loader/core`. See [Smaller bundles](#smaller-bundles-import-only-what-you-need). |
+| `Loader.isActive(target?)` | `true` from `start()` until the loader is closed, including while waiting out `delay`. |
+| `Loader.forceClose(target?)` | Remove it immediately, ignoring the count and `minDuration`. With no target, removes every loader. |
+
+Lists for building your own pickers: `Loader.variants` (names), `Loader.backgrounds` (`['dark', 'light', 'dim', 'blur', 'transparent']`) and `Loader.speeds` (`{ slow: 0.5, normal: 1, fast: 2 }`).
+
+## Variants
+
+50 spinner styles, every one a circle. The previews are animated SVGs made from each variant's real CSS.
+
+| Preview | Variant | Looks like |
+|:---:|---|---|
+| <img src="docs/variants/circle.svg" width="56" height="56" alt="circle loader"> | `circle` | The original spinning ring with red and blue sides (default) |
+| <img src="docs/variants/ring.svg" width="56" height="56" alt="ring loader"> | `ring` | A thin ring with one colored arc spinning |
+| <img src="docs/variants/dual.svg" width="56" height="56" alt="dual loader"> | `dual` | Two rings spinning in opposite directions |
+| <img src="docs/variants/dots.svg" width="56" height="56" alt="dots loader"> | `dots` | Eight dots arranged in a circle, fading in turn |
+| <img src="docs/variants/pulse.svg" width="56" height="56" alt="pulse loader"> | `pulse` | A circle that grows and fades |
+| <img src="docs/variants/orbit.svg" width="56" height="56" alt="orbit loader"> | `orbit` | A dot travelling around a faint ring |
+| <img src="docs/variants/ripple.svg" width="56" height="56" alt="ripple loader"> | `ripple` | Rings expanding outwards, one after another |
+| <img src="docs/variants/comet.svg" width="56" height="56" alt="comet loader"> | `comet` | A ring with a fading tail |
+| <img src="docs/variants/bounce.svg" width="56" height="56" alt="bounce loader"> | `bounce` | Two circles growing and shrinking in turn |
+| <img src="docs/variants/spokes.svg" width="56" height="56" alt="spokes loader"> | `spokes` | Twelve short lines in a circle, fading in turn |
+| <img src="docs/variants/arc.svg" width="56" height="56" alt="arc loader"> | `arc` | An arc that grows and shrinks while spinning |
+| <img src="docs/variants/flip.svg" width="56" height="56" alt="flip loader"> | `flip` | A circle flipping like a coin |
+| <img src="docs/variants/clock.svg" width="56" height="56" alt="clock loader"> | `clock` | Two hands sweeping round a clock face |
+| <img src="docs/variants/gyro.svg" width="56" height="56" alt="gyro loader"> | `gyro` | Two rings tumbling in 3D on different axes |
+| <img src="docs/variants/fill.svg" width="56" height="56" alt="fill loader"> | `fill` | A circle filling up and emptying |
+| <img src="docs/variants/moon.svg" width="56" height="56" alt="moon loader"> | `moon` | A crescent going round a faint disc |
+| <img src="docs/variants/chase.svg" width="56" height="56" alt="chase loader"> | `chase` | A trail of shrinking dots running round a circle |
+| <img src="docs/variants/glow.svg" width="56" height="56" alt="glow loader"> | `glow` | A ring that glows brighter and dimmer |
+| <img src="docs/variants/radar.svg" width="56" height="56" alt="radar loader"> | `radar` | A sweep turning inside a ring, like a radar screen |
+| <img src="docs/variants/dashed.svg" width="56" height="56" alt="dashed loader"> | `dashed` | A dashed ring turning slowly |
+| <img src="docs/variants/halves.svg" width="56" height="56" alt="halves loader"> | `halves` | A circle in two colors, turning with a pause |
+| <img src="docs/variants/rings.svg" width="56" height="56" alt="rings loader"> | `rings` | Three rings inside each other, turning in alternate directions |
+| <img src="docs/variants/planets.svg" width="56" height="56" alt="planets loader"> | `planets` | Three dots orbiting at different distances and speeds |
+| <img src="docs/variants/squish.svg" width="56" height="56" alt="squish loader"> | `squish` | A circle squashing and stretching |
+| <img src="docs/variants/eclipse.svg" width="56" height="56" alt="eclipse loader"> | `eclipse` | A shadow sliding across a disc |
+| <img src="docs/variants/segments.svg" width="56" height="56" alt="segments loader"> | `segments` | A ring of segments in two colors, turning |
+| <img src="docs/variants/flower.svg" width="56" height="56" alt="flower loader"> | `flower` | Six petals breathing in turn while the flower turns |
+| <img src="docs/variants/target.svg" width="56" height="56" alt="target loader"> | `target` | Three rings lighting up from the outside in |
+| <img src="docs/variants/pendulum.svg" width="56" height="56" alt="pendulum loader"> | `pendulum` | A ball swinging back and forth along the bottom of a ring |
+| <img src="docs/variants/donut.svg" width="56" height="56" alt="donut loader"> | `donut` | A ring filling up all the way round, then starting again |
+| <img src="docs/variants/wave.svg" width="56" height="56" alt="wave loader"> | `wave` | Eight dots in a circle, moving out and back in turn like a wave |
+| <img src="docs/variants/heartbeat.svg" width="56" height="56" alt="heartbeat loader"> | `heartbeat` | A circle beating twice, then resting |
+| <img src="docs/variants/yinyang.svg" width="56" height="56" alt="yinyang loader"> | `yinyang` | A yin-yang symbol turning |
+| <img src="docs/variants/atom.svg" width="56" height="56" alt="atom loader"> | `atom` | Three tilted orbits round a nucleus, each with an electron running round |
+| <img src="docs/variants/quarters.svg" width="56" height="56" alt="quarters loader"> | `quarters` | Four quarters of a circle appearing one after another, then fading |
+| <img src="docs/variants/globe.svg" width="56" height="56" alt="globe loader"> | `globe` | A globe spinning, its lines of longitude turning |
+| <img src="docs/variants/swap.svg" width="56" height="56" alt="swap loader"> | `swap` | Two dots trading places round a circle, with a pause |
+| <img src="docs/variants/ball.svg" width="56" height="56" alt="ball loader"> | `ball` | A ball bouncing inside a ring |
+| <img src="docs/variants/wheel.svg" width="56" height="56" alt="wheel loader"> | `wheel` | A spoked wheel rolling forward in bursts |
+| <img src="docs/variants/fan.svg" width="56" height="56" alt="fan loader"> | `fan` | Three fan blades speeding up and slowing down |
+| <img src="docs/variants/breathe.svg" width="56" height="56" alt="breathe loader"> | `breathe` | A ring thickening into a disc and thinning out again |
+| <img src="docs/variants/gear.svg" width="56" height="56" alt="gear loader"> | `gear` | A toothed gear turning |
+| <img src="docs/variants/split.svg" width="56" height="56" alt="split loader"> | `split` | A circle splitting into two halves and joining again while it turns |
+| <img src="docs/variants/stripes.svg" width="56" height="56" alt="stripes loader"> | `stripes` | Diagonal stripes sliding across a disc |
+| <img src="docs/variants/water.svg" width="56" height="56" alt="water loader"> | `water` | Waves rolling on the water inside a ring |
+| <img src="docs/variants/tunnel.svg" width="56" height="56" alt="tunnel loader"> | `tunnel` | Rings shrinking into the middle, one after another |
+| <img src="docs/variants/typing.svg" width="56" height="56" alt="typing loader"> | `typing` | Three dots bouncing inside a round bubble, like someone typing |
+| <img src="docs/variants/eye.svg" width="56" height="56" alt="eye loader"> | `eye` | An eye looking left and right, blinking now and then |
+| <img src="docs/variants/sun.svg" width="56" height="56" alt="sun loader"> | `sun` | A sun with rays turning and glowing |
+| <img src="docs/variants/fizz.svg" width="56" height="56" alt="fizz loader"> | `fizz` | Bubbles rising inside a ring |
+
+Pick one with `variant`. Without it you get `circle`, or your [`configure()`](#set-your-defaults-once) default:
+
+```javascript
+Loader.start({ variant: "dots" });
+await Loader.wrap(saveForm(), { variant: "ripple" }, "Saving");
+Loader.start({ variant: "ring", target: "#users-table" });
+```
+
+An unknown name logs a warning and falls back to `circle`. `Loader.variants` lists every name, handy for a settings dropdown.
+
+## Colors and sizes
+
+Each of these works with every variant:
+
+| Option | What it changes | Default |
+|---|---|---|
+| `color` | Main spinner color | Blue `#3b82f6`. `circle` keeps its red and blue sides unless you set a color. |
+| `secondaryColor` | The second part of two-part variants (table below) | Same as `color` |
+| `trackColor` | The faint ring behind `ring`, `orbit`, `moon`, `halves`, `planets`, `pendulum`, `donut`, `atom`, `ball`, `stripes`, `typing` | Faint white, or faint black on the `light` background |
+| `size` | Spinner width and height. Dots, spokes and other parts scale with it. | `50` (px) |
+| `thickness` | Line width of `circle`, `ring`, `dual`, `orbit`, `ripple`, `comet`, `arc`, `clock`, `gyro`, `fill`, `glow`, `radar`, `dashed`, `rings`, `segments`, `target`, `pendulum`, `donut`, `atom`, `globe`, `ball`, `wheel`, `breathe`, `stripes`, `water`, `tunnel`, `typing`, `eye`, `fizz` | Depends on the variant (2–8px) |
+| `textColor` | Text color | Light, or chosen automatically for a custom `background` |
+| `textSize` | Text font size | `18` (px) |
+
+Colors take any CSS color. Sizes take a number (pixels) or any CSS length, e.g. `"4rem"`.
+
+```javascript
+Loader.start({ variant: "ring", color: "#22c55e" });
+
+Loader.start({
+	variant: "dual",
+	color: "#f43f5e",          // outer ring
+	secondaryColor: "#fbbf24", // inner ring
+	size: 80,
+	thickness: 6
+});
+
+Loader.start({ variant: "glow", color: "hotpink", textColor: "#fff", textSize: 14 }, "Syncing");
+```
+
+**Which variants use `secondaryColor`:**
+
+| Variant | `color` | `secondaryColor` |
+|---|---|---|
+| `circle` | Right side | Left side |
+| `dual` | Outer ring | Inner ring |
+| `ripple` | First ring | Second ring |
+| `bounce` | First circle | Second circle |
+| `clock` | Face | Hands |
+| `gyro` | First ring | Second ring |
+| `fill` | Outline | Filling |
+| `radar` | Ring | Sweep |
+| `halves` | First half | Second half (default: the track color) |
+| `rings` | Outer and inner rings | Middle ring |
+| `planets` | Outer and inner planets | Middle planet |
+| `eclipse` | Disc | Shadow (default: translucent black) |
+| `segments` | Every other segment | The segments in between |
+| `flower` | Every other petal | The petals in between |
+| `target` | Outer ring and center | Middle ring |
+| `wave` | Every other dot | The dots in between |
+| `yinyang` | One side | The other side (default: light grey) |
+| `atom` | First and third orbits | Second orbit |
+| `quarters` | First and third quarters | Second and fourth quarters |
+| `globe` | Outline and equator | Lines of longitude |
+| `swap` | First dot | Second dot |
+| `wheel` | Rim and hub | Spokes |
+| `fan` | Blades | Hub |
+| `split` | Left half | Right half |
+| `water` | Ring | Water |
+| `tunnel` | First and third rings | Second ring |
+| `eye` | Outline | Pupil |
+| `sun` | Disc | Rays |
+| `fizz` | Ring | Bubbles |
+
+The other variants use only `color`.
+
+**Note for `arc`:** its `thickness` is measured against a 50px spinner and grows with `size`. At `size: 100`, `thickness: 5` looks 10px wide.
+
+## Text
+
+The text under the spinner can be one message, several messages, or nothing:
+
+```javascript
+Loader.start("Fetching data");                     // one message (default: "Loading...")
+Loader.start({ text: ["Loading...", "Almost there", "Just a moment"] });   // take turns every 2 s
+Loader.start({ text: ["Uploading", "Processing"], textInterval: 3000 }); // every 3 s
+Loader.start({ text: false });                     // no text: "", false or null
+```
+
+Change it while the loader is showing with `Loader.update`, which takes the same values:
+
+```javascript
+Loader.update("Uploading... 45%");         // show text
+Loader.update(["Saving", "Still saving"]); // switch to changing messages
+Loader.update(false);                      // hide the text
+Loader.update();                           // back to "Loading..."
+```
+
+With no text, screen readers still hear "Loading".
+
+## Background
+
+| `background` | Looks like |
+|---|---|
+| `dark` | Solid dark grey (default) |
+| `light` | Solid near-white, with dark text |
+| `dim` | See-through black. The page shows through, darkened. |
+| `blur` | See-through, and blurs the page behind it |
+| `transparent` | No background. Only the spinner and text, in the page's own text color. |
+| any CSS color | e.g. `"#4c1d95"`, `"rgb(0 0 0 / 0.3)"`, `"white"` |
+
+```javascript
+Loader.start({ background: "blur" });
+Loader.start({ background: "light", variant: "arc" });
+Loader.start({ background: "rgba(76, 29, 149, 0.9)" });
+```
+
+**Automatic text color:** with a custom color, the text color is chosen for you. Light backgrounds (`"white"`, `"gold"`, `"#fecaca"`...) get dark text, and the faint track ring turns dark too. Dark backgrounds keep the light text. Any CSS color format works. This also applies to `loadingOverlayStyles.backgroundColor`, which wins over `background`. Mostly see-through colors (under 50% opacity) keep the light text, because the page behind decides how they look. Set `textColor` to choose the color yourself.
+
+## Speed
+
+```javascript
+Loader.start({ speed: "slow" });   // half speed
+Loader.start({ speed: "fast" });   // twice as fast
+Loader.start({ speed: 1.5 });      // any multiplier
+```
+
+It works for every variant. An invalid speed (0, negative, an unknown name) logs a warning and uses normal speed.
+
+## Changing the look while it's showing
+
+`Loader.setStyle` changes an open loader in place, without closing it:
+
+| Can change | |
+|---|---|
+| Colors | `color`, `secondaryColor`, `trackColor`, `textColor` |
+| Sizes | `size`, `thickness`, `textSize` |
+| Look | `variant`, `speed`, `background`, `preset` |
+
+```javascript
+Loader.start({ variant: "ring", color: "#3b82f6" }, "Uploading");
+
+Loader.setStyle({ color: "#ef4444", speed: "slow" }); // e.g. when something goes wrong
+Loader.update("Retrying...");
+Loader.setStyle({ variant: "pulse" });                // switch variant
+Loader.setStyle({ color: null, speed: null });        // null resets to the default
+Loader.setStyle({ color: "orange" }, "#chart");       // a loader inside an element
+```
+
+- Only the options you pass change. The text stays; change it with `Loader.update`.
+- A new `background` works out the [automatic text color](#background) again.
+- If the loader is still waiting out its `delay`, the new look is used when it appears.
+- Options it can't change (such as `target` or `delay`) log a warning and are ignored.
+
+## Smaller bundles: import only what you need
+
+`import { Loader } from "circle-loader"` includes all 50 variants (about 9.3 KB gzipped). Most apps use one or two. Import the core and only the variants you use, and your bundler (Vite, webpack, Rollup, esbuild, Next.js, Nuxt...) leaves the rest out:
+
+```javascript
+import { Loader } from "circle-loader/core";       // the Loader and the default circle variant
+import { dots, arc } from "circle-loader/variants"; // only these two are bundled
+
+Loader.start({ variant: dots });   // pass the variant itself...
+Loader.register(arc);              // ...or register it once,
+Loader.start({ variant: "arc" });  // then use it by name anywhere
+```
+
+| You import | Bundle size (minified, gzipped, measured with Rollup) |
+|---|---|
+| `circle-loader` (everything) | 9.3 KB |
+| `circle-loader/core` only | 4.3 KB |
+| core + `dots` | 4.6 KB |
+| core + `dots`, `arc`, `ring` | 4.9 KB |
+
+- Each variant is its own export, with its CSS inside it. Variants you don't import are dropped, CSS included.
+- **CSS is added on first use, not on import:** the core CSS when the first loader shows, and each variant's CSS when that variant first shows. Importing never changes the page.
+- With `circle-loader/core`, a variant name that isn't registered logs a warning and falls back to `circle`.
+- `circle-loader`, `circle-loader/core` and `circle-loader/variants` all share one `Loader`, so mixing them is fine.
+- `allVariants` from `circle-loader/variants` lists every built-in variant, but importing it keeps them all in your bundle.
+
+### Your own variants
+
+A variant is a plain object, so you can make your own:
+
+```javascript
+import { Loader } from "circle-loader/core";
+
+const heartbeat = {
+	name: "heartbeat",        // class: loading-spinner--heartbeat
+	css: `
+		.loading-spinner.loading-spinner--heartbeat {
+			border: none;
+			background: var(--circle-loader-color, #3b82f6);
+			animation: heartbeat calc(1s / var(--circle-loader-speed, 1)) ease-in-out infinite;
+		}
+		@keyframes heartbeat { 0%, 100% { transform: scale(0.7); } 50% { transform: scale(1); } }
+	`,
+	spans: 0,                 // optional: number of empty <span> children
+	build: (spinner) => {}    // optional: add other children yourself
+};
+
+Loader.start({ variant: heartbeat, color: "crimson", speed: "fast" });
+```
+
+Use the `--circle-loader-*` variables in your CSS, as above, and the `color`, `size` and `speed` options work with your variant too.
+
+## Customizing with CSS
+
+### CSS variables
+
+Set these in your own CSS to style every loader in your app. The matching options passed to `start()` or `configure()` win over them.
+
+| Variable | Default | Option |
+|---|---|---|
+| `--circle-loader-color` | `#3b82f6` | `color` |
+| `--circle-loader-secondary-color` | the main color | `secondaryColor` |
+| `--circle-loader-track` | faint white | `trackColor` |
+| `--circle-loader-size` | `50px` | `size` |
+| `--circle-loader-thickness` | per variant | `thickness` |
+| `--circle-loader-speed` | `1` | `speed` |
+| `--circle-loader-text-color` | `#f9f9f9` | `textColor` |
+| `--circle-loader-text-size` | `18px` | `textSize` |
+
+```css
+.loading-overlay {
+	--circle-loader-color: hotpink;
+	--circle-loader-size: 64px;
+}
+
+/* only for the loader inside one element */
+#users-table .loading-overlay { --circle-loader-color: orange; }
+```
+
+### Classes
+
+| Class | Element |
+|---|---|
+| `.loading-overlay` | The overlay. `.loading-overlay--scoped` when inside a `target`, `.loading-overlay--light` etc. for backgrounds. |
+| `.loading-spinner` and `.loading-spinner--<variant>` | The spinner, e.g. `.loading-spinner--arc` |
+| `.loading-text` | The text |
+
+Moving parts you can target:
+
+| Variant | Parts |
+|---|---|
+| `dots`, `spokes`, `chase`, `gyro`, `rings`, `planets`, `target`, `flower`, `wave`, `atom`, `quarters`, `globe`, `swap`, `tunnel`, `typing`, `fizz` | `<span>` children: `.loading-spinner--dots > span` (the `atom` orbits are `span::before`) |
+| `arc` | SVG circle: `.loading-spinner--arc circle` |
+| `dual`, `ripple`, `bounce`, `fill`, `radar`, `eclipse`, `globe`, `ball`, `wheel`, `gear`, `split`, `water`, `eye`, `sun` | `::before` (and `::after` for ripple, bounce, split and water) |
+| `clock` | Long hand `::before`, short hand `::after` |
+| `orbit`, `pendulum` | The dot is `::after` |
+| Others | The spinner element itself |
+
+```css
+.loading-spinner--arc circle { stroke-width: 8; }                    /* thicker arc */
+.loading-spinner--dots > span { border-radius: 2px; }                /* square dots */
+.loading-spinner.loading-spinner--ring { animation-duration: 2s; }   /* one variant slower */
+```
+
+The package's CSS is added at the top of `<head>`, so your rule wins when its selector is at least as specific as the package's. For the spinner element itself, use the doubled selector `.loading-spinner.loading-spinner--<variant>`.
+
+### Style objects
+
+For one-off inline styles, pass `loadingOverlayStyles`, `loadingSpinnerStyles` and `loadingTextStyles`. Keys are camelCase CSS properties or CSS variables, applied with `!important`:
+
 ```javascript
 Loader.start({
-    // below styles are optional
-    // you can add your own styles here
-	loadingOverlayStyles: {
-            backgroundColor: "rgba(0, 128, 0, 0.8)", // Green overlay with some transparency
-            border: "100px solid red"
-	},
-
-	loadingSpinnerStyles: {
-	    borderBottom: "8px solid skyblue",
-	    borderTop: "8px solid black",
-	    borderRight: "8px solid rgba(255, 0, 0, 0.938)",
-	    borderLeft: "8px solid yellow",
-	    borderRadius: "5%",
-	    backgroundColor: "white",
-	    height: "60px",
-	    width: "80px",
-	    animation: `move 1s linear infinite`
-	},
-	loadingTextStyles: {
-            color: "lightgreen",
-            fontWeight: "bold",
-            animation: `moveText 1s linear infinite`
-        }
-	},
-	"Data is being fetched" // Loading Text
-);
+	loadingOverlayStyles: { backgroundColor: "rgba(0, 128, 0, 0.8)" },
+	loadingTextStyles: { color: "lightgreen", fontWeight: "bold" },
+	loadingSpinnerStyles: { borderRadius: "5%" }
+});
 ```
+
+With `configure()`, these merge key by key, so a call can add one style without dropping the defaults. For variants other than `circle`, setting `border`, `background` or `animation` in `loadingSpinnerStyles` replaces the variant's own look; use the style options (`color`, `size`, `thickness`...) instead. Custom animations need your own `@keyframes`. The built-in spinner animation is called `spin`.
+
+## Frameworks
+
+Importing the package on the server is safe. Nothing touches the page until you call a method in the browser, and every method does nothing on the server. The package ships an ES module (`.mjs`) and a CommonJS build, so it loads on any Node version.
+
+**The rule: call `Loader` from the browser,** in event handlers or after the component has mounted. Angular, Svelte and plain JavaScript work the same way as the examples below.
+
+### React and Next.js
+
+In Next.js (App Router), use it in a Client Component:
+
+```jsx
+"use client";
+import { Loader } from "circle-loader";
+
+export default function SaveButton() {
+	const save = () => Loader.wrap(fetch("/api/save", { method: "POST" }), "Saving");
+	return <button onClick={save}>Save</button>;
+}
+```
+
+To show the loader while a component is on screen, start it in `useEffect` and close it in the cleanup. React's Strict Mode runs effects twice in development, and the cleanup keeps the count balanced:
+
+```jsx
+useEffect(() => {
+	Loader.start({ target: "#chart" });
+	return () => Loader.close("#chart");
+}, []);
+```
+
+### Vue and Nuxt
+
+Use it in event handlers or `onMounted`:
+
+```vue
+<script setup>
+import { Loader } from "circle-loader";
+
+const save = () => Loader.wrap($fetch("/api/save", { method: "POST" }), "Saving");
+</script>
+
+<template>
+	<button @click="save">Save</button>
+</template>
+```
+
+**Don't call `Loader.start()` at the top level of `<script setup>`.** That code runs on the server and again in the browser, so the loader opens in the browser with nothing to close it.
+
+To show it on every page change in Nuxt, add a client-only plugin, `plugins/loader.client.js`:
+
+```javascript
+import { Loader } from "circle-loader";
+
+export default defineNuxtPlugin((nuxtApp) => {
+	let pageLoading = false;
+
+	nuxtApp.hook("page:start", () => {
+		if (pageLoading) return;
+		pageLoading = true;
+		Loader.start({ delay: 150 });
+	});
+
+	nuxtApp.hook("page:finish", () => {
+		if (!pageLoading) return;
+		pageLoading = false;
+		Loader.close();
+	});
+});
+```
+
+`delay: 150` skips the loader on fast page changes. The `pageLoading` flag makes the plugin close only the loader it opened: Nuxt fires `page:finish` on the first page load without a `page:start`.
+
+## Accessibility
+
+The loader has `role="status"` and `aria-live="polite"`, so screen readers announce the text. With no text, they hear "Loading". A `target` element gets `aria-busy="true"` while loading. Animations slow down for users who prefer reduced motion.
+
+## Development
+
+```bash
+npm install
+npm test            # builds, then runs the tests (Node's test runner + jsdom)
+npm run build       # builds dist/ and the types
+npm run demo        # builds and serves the playground at http://localhost:5173/demo/
+npm run docs:svgs   # regenerates the variant previews in docs/variants/
+```
+
+The source is in `src/`: `core.js` (the Loader), `variants.js` (one export per variant) and `styles/` (core CSS plus one file per variant). Types are in `types/`. The playground is `demo/index.html`, a single file with no build step.
+
+## Author
+
+**Majid Ali**, Full Stack Web Developer (Vue.js, Nuxt.js, React, TypeScript, Python/FastAPI), Islamabad, Pakistan.
+
+- Portfolio: [majidev.netlify.app](https://majidev.netlify.app)
+- GitHub: [@Majid-Ali-Watto](https://github.com/Majid-Ali-Watto)
+- LinkedIn: [majid-ali-074b97245](https://www.linkedin.com/in/majid-ali-074b97245/)
+- Email: [majidaliqau@gmail.com](mailto:majidaliqau@gmail.com)
+- Freelance: [Upwork](https://www.upwork.com/freelancers/~018c214d3139f0f30e)
+
+Found a bug or have an idea? [Open an issue](https://github.com/Majid-Ali-Watto/Loaders/issues).
+
+## License
+
+ISC

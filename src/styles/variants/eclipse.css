@@ -1,0 +1,25 @@
+/* eclipse: a shadow sliding across a disc */
+.loading-spinner.loading-spinner--eclipse {
+    position: relative;
+    overflow: hidden;
+    border: none;
+    background-color: var(--circle-loader-color, #3b82f6);
+    animation: none;
+}
+
+.loading-spinner--eclipse::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background-color: var(--circle-loader-secondary-color, rgba(0, 0, 0, 0.6));
+    animation: circle-loader-eclipse calc(1.6s / var(--circle-loader-speed, 1)) ease-in-out infinite;
+}
+
+@keyframes circle-loader-eclipse {
+    0% { transform: translateX(-105%); }
+    100% { transform: translateX(105%); }
+}

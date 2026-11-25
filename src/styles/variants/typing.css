@@ -1,0 +1,25 @@
+/* typing: three dots bouncing inside a round bubble, like someone typing */
+.loading-spinner.loading-spinner--typing {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8%;
+    border: var(--circle-loader-thickness, 2px) solid var(--circle-loader-track, rgba(255, 255, 255, 0.15));
+    animation: none;
+}
+
+.loading-spinner--typing > span {
+    width: 16%;
+    height: 16%;
+    border-radius: 50%;
+    background-color: var(--circle-loader-color, #3b82f6);
+    animation: circle-loader-typing calc(1s / var(--circle-loader-speed, 1)) ease-in-out infinite;
+}
+
+.loading-spinner--typing > span:nth-child(2) { animation-delay: calc(0.15s / var(--circle-loader-speed, 1)); }
+.loading-spinner--typing > span:nth-child(3) { animation-delay: calc(0.3s / var(--circle-loader-speed, 1)); }
+
+@keyframes circle-loader-typing {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+    30% { transform: translateY(-70%); opacity: 1; }
+}

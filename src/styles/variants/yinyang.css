@@ -1,0 +1,11 @@
+/* yinyang: a yin-yang symbol turning */
+.loading-spinner.loading-spinner--yinyang {
+    --circle-loader-yin: var(--circle-loader-color, #3b82f6);
+    --circle-loader-yang: var(--circle-loader-secondary-color, #e5e7eb);
+    border: none;
+    background:
+        radial-gradient(circle calc(var(--circle-loader-size, 50px) / 4) at 50% 25%, var(--circle-loader-yin) 0 28%, var(--circle-loader-yang) 30% 100%, transparent 100%),
+        radial-gradient(circle calc(var(--circle-loader-size, 50px) / 4) at 50% 75%, var(--circle-loader-yang) 0 28%, var(--circle-loader-yin) 30% 100%, transparent 100%),
+        linear-gradient(90deg, var(--circle-loader-yin) 50%, var(--circle-loader-yang) 50%);
+    animation: spin calc(2s / var(--circle-loader-speed, 1)) linear infinite;
+}

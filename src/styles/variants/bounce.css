@@ -1,0 +1,30 @@
+/* bounce: two circles growing and shrinking in turn */
+.loading-spinner.loading-spinner--bounce {
+    position: relative;
+    border: none;
+    animation: none;
+}
+
+.loading-spinner--bounce::before,
+.loading-spinner--bounce::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    border-radius: 50%;
+    background-color: var(--circle-loader-color, #3b82f6);
+    opacity: 0.6;
+    animation: circle-loader-bounce calc(2s / var(--circle-loader-speed, 1)) ease-in-out infinite;
+}
+
+.loading-spinner--bounce::after {
+    background-color: var(--circle-loader-secondary-color, var(--circle-loader-color, #3b82f6));
+    animation-delay: calc(-1s / var(--circle-loader-speed, 1));
+}
+
+@keyframes circle-loader-bounce {
+    0%, 100% { transform: scale(0); }
+    50% { transform: scale(1); }
+}

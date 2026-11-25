@@ -1,0 +1,24 @@
+/* wheel: a spoked wheel rolling forward in bursts */
+.loading-spinner.loading-spinner--wheel {
+    --circle-loader-spoke: calc(var(--circle-loader-thickness, 4px) * 0.6);
+    position: relative;
+    border: var(--circle-loader-thickness, 4px) solid var(--circle-loader-color, #3b82f6);
+    background:
+        radial-gradient(circle, var(--circle-loader-color, #3b82f6) 0 calc(var(--circle-loader-size, 50px) * 0.1), transparent calc(var(--circle-loader-size, 50px) * 0.1 + 1px)),
+        linear-gradient(var(--circle-loader-secondary-color, var(--circle-loader-color, #3b82f6)), var(--circle-loader-secondary-color, var(--circle-loader-color, #3b82f6))) center / var(--circle-loader-spoke) 100% no-repeat,
+        linear-gradient(var(--circle-loader-secondary-color, var(--circle-loader-color, #3b82f6)), var(--circle-loader-secondary-color, var(--circle-loader-color, #3b82f6))) center / 100% var(--circle-loader-spoke) no-repeat;
+    animation: spin calc(1.2s / var(--circle-loader-speed, 1)) cubic-bezier(0.5, 0, 0.5, 1) infinite;
+}
+
+.loading-spinner--wheel::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background:
+        linear-gradient(var(--circle-loader-secondary-color, var(--circle-loader-color, #3b82f6)), var(--circle-loader-secondary-color, var(--circle-loader-color, #3b82f6))) center / var(--circle-loader-spoke) 100% no-repeat,
+        linear-gradient(var(--circle-loader-secondary-color, var(--circle-loader-color, #3b82f6)), var(--circle-loader-secondary-color, var(--circle-loader-color, #3b82f6))) center / 100% var(--circle-loader-spoke) no-repeat;
+    transform: rotate(45deg);
+}

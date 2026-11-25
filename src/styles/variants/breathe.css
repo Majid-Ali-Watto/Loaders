@@ -1,0 +1,11 @@
+/* breathe: a ring thickening into a disc and thinning out again */
+.loading-spinner.loading-spinner--breathe {
+    box-sizing: border-box;
+    border: var(--circle-loader-thickness, 3px) solid var(--circle-loader-color, #3b82f6);
+    animation: circle-loader-breathe calc(1.6s / var(--circle-loader-speed, 1)) ease-in-out infinite;
+}
+
+@keyframes circle-loader-breathe {
+    0%, 100% { border-width: var(--circle-loader-thickness, 3px); }
+    50% { border-width: calc(var(--circle-loader-size, 50px) / 2); }
+}

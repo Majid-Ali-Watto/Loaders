@@ -1,0 +1,43 @@
+/* planets: three dots orbiting at different distances and speeds */
+.loading-spinner.loading-spinner--planets {
+    position: relative;
+    border: none;
+    animation: none;
+}
+
+.loading-spinner--planets > span {
+    position: absolute;
+    border: 1px solid var(--circle-loader-track, rgba(255, 255, 255, 0.15));
+    border-radius: 50%;
+}
+
+.loading-spinner--planets > span::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 50%;
+    border-radius: 50%;
+    background-color: var(--circle-loader-color, #3b82f6);
+    transform: translate(-50%, -50%);
+}
+
+.loading-spinner--planets > span:nth-child(1) {
+    top: 0; right: 0; bottom: 0; left: 0;
+    animation: spin calc(2s / var(--circle-loader-speed, 1)) linear infinite;
+}
+
+.loading-spinner--planets > span:nth-child(1)::before { width: 9px; height: 9px; }
+
+.loading-spinner--planets > span:nth-child(2) {
+    top: 20%; right: 20%; bottom: 20%; left: 20%;
+    animation: spin calc(1.3s / var(--circle-loader-speed, 1)) linear infinite;
+}
+
+.loading-spinner--planets > span:nth-child(2)::before { width: 7px; height: 7px; background-color: var(--circle-loader-secondary-color, var(--circle-loader-color, #3b82f6)); }
+
+.loading-spinner--planets > span:nth-child(3) {
+    top: 38%; right: 38%; bottom: 38%; left: 38%;
+    animation: spin calc(0.9s / var(--circle-loader-speed, 1)) linear infinite;
+}
+
+.loading-spinner--planets > span:nth-child(3)::before { width: 5px; height: 5px; }

@@ -1,0 +1,20 @@
+/* donut: a ring filling up all the way round, then starting again */
+/* A number (0-100), not a percentage: the CSS minifier turns "0%" into "0", which a <percentage> rejects. */
+@property --circle-loader-donut {
+    syntax: "<number>";
+    inherits: false;
+    initial-value: 0;
+}
+
+.loading-spinner.loading-spinner--donut {
+    border: none;
+    background: conic-gradient(var(--circle-loader-color, #3b82f6) calc(var(--circle-loader-donut) * 1%), var(--circle-loader-track, rgba(255, 255, 255, 0.15)) 0);
+    -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - var(--circle-loader-thickness, 8px)), #000 calc(100% - var(--circle-loader-thickness, 8px) + 1px));
+    mask: radial-gradient(farthest-side, transparent calc(100% - var(--circle-loader-thickness, 8px)), #000 calc(100% - var(--circle-loader-thickness, 8px) + 1px));
+    animation: circle-loader-donut calc(1.6s / var(--circle-loader-speed, 1)) ease-in-out infinite;
+}
+
+@keyframes circle-loader-donut {
+    0% { --circle-loader-donut: 0; }
+    100% { --circle-loader-donut: 100; }
+}

@@ -1,0 +1,25 @@
+/* chase: a trail of shrinking dots running round a circle */
+.loading-spinner.loading-spinner--chase {
+    position: relative;
+    border: none;
+    animation: spin calc(1.1s / var(--circle-loader-speed, 1)) linear infinite;
+}
+
+.loading-spinner--chase > span {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    --radius: calc(var(--circle-loader-size, 50px) * -0.4);
+    width: calc(var(--circle-loader-size, 50px) * 0.18);
+    height: calc(var(--circle-loader-size, 50px) * 0.18);
+    margin: calc(var(--circle-loader-size, 50px) * -0.09) 0 0 calc(var(--circle-loader-size, 50px) * -0.09);
+    border-radius: 50%;
+    background-color: var(--circle-loader-color, #3b82f6);
+}
+
+.loading-spinner--chase > span:nth-child(1) { transform: rotate(0deg) translateY(var(--radius)) scale(1); }
+.loading-spinner--chase > span:nth-child(2) { transform: rotate(-30deg) translateY(var(--radius)) scale(0.85); opacity: 0.85; }
+.loading-spinner--chase > span:nth-child(3) { transform: rotate(-60deg) translateY(var(--radius)) scale(0.7); opacity: 0.7; }
+.loading-spinner--chase > span:nth-child(4) { transform: rotate(-90deg) translateY(var(--radius)) scale(0.55); opacity: 0.55; }
+.loading-spinner--chase > span:nth-child(5) { transform: rotate(-120deg) translateY(var(--radius)) scale(0.4); opacity: 0.4; }
+.loading-spinner--chase > span:nth-child(6) { transform: rotate(-150deg) translateY(var(--radius)) scale(0.3); opacity: 0.25; }

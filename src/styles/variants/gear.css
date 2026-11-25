@@ -1,0 +1,20 @@
+/* gear: a toothed gear turning */
+.loading-spinner.loading-spinner--gear {
+    position: relative;
+    border: none;
+    background: radial-gradient(farthest-side, transparent 0 30%, var(--circle-loader-color, #3b82f6) 32% 70%, transparent 72%);
+    animation: spin calc(2.4s / var(--circle-loader-speed, 1)) linear infinite;
+}
+
+.loading-spinner--gear::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    border-radius: 50%;
+    background: repeating-conic-gradient(var(--circle-loader-color, #3b82f6) 0 15deg, transparent 15deg 30deg);
+    -webkit-mask: radial-gradient(farthest-side, transparent 66%, #000 68%);
+    mask: radial-gradient(farthest-side, transparent 66%, #000 68%);
+}

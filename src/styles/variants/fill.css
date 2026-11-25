@@ -1,0 +1,24 @@
+/* fill: a circle filling up and emptying */
+.loading-spinner.loading-spinner--fill {
+    position: relative;
+    overflow: hidden;
+    border: var(--circle-loader-thickness, 3px) solid var(--circle-loader-color, #3b82f6);
+    animation: none;
+}
+
+.loading-spinner--fill::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 0;
+    background-color: var(--circle-loader-secondary-color, var(--circle-loader-color, #3b82f6));
+    animation: circle-loader-fill calc(2s / var(--circle-loader-speed, 1)) ease-in-out infinite;
+}
+
+@keyframes circle-loader-fill {
+    0% { height: 0; opacity: 1; }
+    75% { height: 100%; opacity: 1; }
+    100% { height: 100%; opacity: 0; }
+}

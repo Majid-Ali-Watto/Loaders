@@ -1,0 +1,35 @@
+/* gyro: two rings tumbling in 3D on different axes */
+.loading-spinner.loading-spinner--gyro {
+    position: relative;
+    border: none;
+    animation: none;
+}
+
+.loading-spinner--gyro > span {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    border: var(--circle-loader-thickness, 3px) solid var(--circle-loader-color, #3b82f6);
+    border-radius: 50%;
+}
+
+.loading-spinner--gyro > span:nth-child(1) {
+    animation: circle-loader-gyro-x calc(1.6s / var(--circle-loader-speed, 1)) linear infinite;
+}
+
+.loading-spinner--gyro > span:nth-child(2) {
+    border-color: var(--circle-loader-secondary-color, var(--circle-loader-color, #3b82f6));
+    animation: circle-loader-gyro-y calc(1.6s / var(--circle-loader-speed, 1)) linear infinite;
+}
+
+@keyframes circle-loader-gyro-x {
+    0% { transform: perspective(200px) rotateZ(45deg) rotateX(0deg); }
+    100% { transform: perspective(200px) rotateZ(45deg) rotateX(360deg); }
+}
+
+@keyframes circle-loader-gyro-y {
+    0% { transform: perspective(200px) rotateZ(45deg) rotateY(0deg); }
+    100% { transform: perspective(200px) rotateZ(45deg) rotateY(360deg); }
+}

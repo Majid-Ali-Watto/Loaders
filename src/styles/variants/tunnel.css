@@ -1,0 +1,27 @@
+/* tunnel: rings shrinking into the middle, one after another */
+.loading-spinner.loading-spinner--tunnel {
+    position: relative;
+    border: none;
+    animation: none;
+}
+
+.loading-spinner--tunnel > span {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    border: var(--circle-loader-thickness, 3px) solid var(--circle-loader-color, #3b82f6);
+    border-radius: 50%;
+    opacity: 0;
+    animation: circle-loader-tunnel calc(1.5s / var(--circle-loader-speed, 1)) cubic-bezier(0.2, 0, 0.8, 1) infinite;
+}
+
+.loading-spinner--tunnel > span:nth-child(2) { border-color: var(--circle-loader-secondary-color, var(--circle-loader-color, #3b82f6)); animation-delay: calc(-0.5s / var(--circle-loader-speed, 1)); }
+.loading-spinner--tunnel > span:nth-child(3) { animation-delay: calc(-1s / var(--circle-loader-speed, 1)); }
+
+@keyframes circle-loader-tunnel {
+    0% { transform: scale(1); opacity: 0; }
+    20% { opacity: 1; }
+    100% { transform: scale(0.05); opacity: 0.2; }
+}

@@ -1,0 +1,25 @@
+/* arc: an arc that grows and shrinks while spinning */
+.loading-spinner.loading-spinner--arc {
+    border: none;
+    animation: spin calc(2s / var(--circle-loader-speed, 1)) linear infinite;
+}
+
+.loading-spinner--arc svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.loading-spinner--arc circle {
+    fill: none;
+    stroke: var(--circle-loader-color, #3b82f6);
+    stroke-width: var(--circle-loader-thickness, 5px); /* in units of a 50px spinner */
+    stroke-linecap: round;
+    animation: circle-loader-dash calc(1.5s / var(--circle-loader-speed, 1)) ease-in-out infinite;
+}
+
+@keyframes circle-loader-dash {
+    0% { stroke-dasharray: 1, 150; stroke-dashoffset: 0; }
+    50% { stroke-dasharray: 90, 150; stroke-dashoffset: -35; }
+    100% { stroke-dasharray: 90, 150; stroke-dashoffset: -124; }
+}

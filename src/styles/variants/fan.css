@@ -1,0 +1,13 @@
+/* fan: three fan blades speeding up and slowing down */
+.loading-spinner.loading-spinner--fan {
+    border: none;
+    background:
+        radial-gradient(circle, var(--circle-loader-secondary-color, var(--circle-loader-color, #3b82f6)) 0 calc(var(--circle-loader-size, 50px) * 0.12), transparent calc(var(--circle-loader-size, 50px) * 0.12 + 1px)),
+        repeating-conic-gradient(var(--circle-loader-color, #3b82f6) 0 50deg, transparent 50deg 120deg);
+    animation: circle-loader-fan calc(1.6s / var(--circle-loader-speed, 1)) ease-in-out infinite;
+}
+
+@keyframes circle-loader-fan {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(720deg); }
+}
