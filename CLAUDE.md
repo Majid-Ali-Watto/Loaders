@@ -73,6 +73,7 @@ The demo loads `../dist/circle-loader.min.js` (cache-busted) and falls back to `
 
 - **Theme:** page colors are CSS tokens on `:root`. The dark values are written twice, under `@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) }` and under `:root[data-theme="dark"]`: change both together. The header toggle (`#theme-toggle`) sets `data-theme` on `<html>`, saves it in `localStorage` (`circle-loader-demo-theme`, wrapped in try/catch), and sets `data-dark` for the icon. A small script at the top of `<head>` applies the saved theme before first paint. The toggle code runs before the package loads, so it works even when loading fails.
 - **The preview stage stays dark** whatever the page theme: it shows the loader's real default `background: "dark"`. Don't tie it to the page theme.
+- **SEO:** the `<head>` has the title, description, canonical URL, Open Graph/Twitter tags and JSON-LD, all pointing at `https://majid-ali-watto.github.io/Loaders/demo/`. `demo/og.png` is the 1200×630 link-preview image, a headless Chrome screenshot of the demo at that window size (`--window-size=1200,630 --hide-scrollbars`): retake it when the page's look changes. The "About" section is the page's crawlable text. The Pages workflow adds `sitemap.xml` (no `robots.txt`: it only works at the domain root).
 - **Variant info:** `INFO` (one-line description) and `USES` (which variants use `secondaryColor`, `thickness`, `trackColor`) drive the tiles and grey out unused controls.
 
 ## Conventions
