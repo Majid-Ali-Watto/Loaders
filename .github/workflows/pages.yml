@@ -35,7 +35,10 @@ jobs:
         run: |
           mkdir -p site
           cp -r demo dist site/
-          echo '<!doctype html><meta charset="utf-8"><title>circle-loader</title><meta http-equiv="refresh" content="0; url=demo/"><a href="demo/">circle-loader playground</a>' > site/index.html
+          # A sitemap to submit in Google Search Console. (robots.txt only works at the domain root, so there is none.)
+          SITE=https://majid-ali-watto.github.io/Loaders
+          echo "<!doctype html><meta charset=\"utf-8\"><title>circle-loader</title><link rel=\"canonical\" href=\"$SITE/demo/\"><meta http-equiv=\"refresh\" content=\"0; url=demo/\"><a href=\"demo/\">circle-loader playground</a>" > site/index.html
+          printf '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url><loc>%s/demo/</loc><lastmod>%s</lastmod></url>\n</urlset>\n' "$SITE" "$(date -u +%F)" > site/sitemap.xml
       - uses: actions/upload-pages-artifact@v5
         with:
           path: site

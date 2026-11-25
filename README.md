@@ -4,7 +4,7 @@
 [![license](https://img.shields.io/npm/l/circle-loader)](#license)
 [![live demo](https://img.shields.io/badge/demo-live-3b82f6)](https://majid-ali-watto.github.io/Loaders/demo/)
 
-**50 circular loading spinners with one small API.** Show a loader while data loads, over the whole page or inside one element. No dependencies. Works with React, Vue, Angular, Svelte, Next.js, Nuxt and plain JavaScript.
+**A lightweight JavaScript loading spinner library: 50 circular CSS loaders with one small API.** Show a loading overlay while data loads, over the whole page or inside one element, with an optional progress bar. No dependencies, SSR-safe, TypeScript types included. Works with React, Next.js, Vue, Nuxt, Angular, Svelte and plain JavaScript, or as a `<circle-loader>` web component.
 
 **[Try the live playground →](https://majid-ali-watto.github.io/Loaders/demo/)** Pick a spinner, colors and text, then copy the code.
 
